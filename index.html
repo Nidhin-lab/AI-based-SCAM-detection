@@ -4,8 +4,23 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>AI Scam Detector by Nidhin R</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
 <style>
+:root {
+  --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  --warning-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  --danger-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  --glass-bg: rgba(255, 255, 255, 0.08);
+  --glass-border: rgba(255, 255, 255, 0.18);
+  --text-primary: #ffffff;
+  --text-secondary: #a0aec0;
+  --shadow-glass: 0 8px 32px rgba(31, 38, 135, 0.37);
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -13,98 +28,44 @@
 }
 
 body {
-  font-family: 'Orbitron', monospace;
-  background: radial-gradient(ellipse at center, #001122 0%, #000510 50%, #000000 100%);
-  color: #00ffe0;
-  overflow-x: hidden;
+  font-family: 'Inter', sans-serif;
+  background: radial-gradient(ellipse at top, #1a1b3a 0%, #0f0f23 50%, #000000 100%);
+  color: var(--text-primary);
   min-height: 100vh;
-  cursor: crosshair;
+  overflow-x: hidden;
+  position: relative;
 }
 
-.cyber-grid {
+.particle-container {
   position: fixed;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  background-image: 
-    linear-gradient(rgba(0, 255, 224, 0.1) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 255, 224, 0.1) 1px, transparent 1px);
-  background-size: 50px 50px;
   z-index: 1;
-  animation: gridPulse 4s ease-in-out infinite;
-}
-
-@keyframes gridPulse {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 0.8; }
-}
-
-.hologram-lines {
-  position: fixed;
-  width: 100%;
-  height: 100%;
-  z-index: 2;
   pointer-events: none;
 }
 
-.scan-line {
+.particle {
   position: absolute;
-  width: 100%;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, #00ffe0, transparent);
-  animation: scanMove 4s linear infinite;
-}
-
-.scan-line:nth-child(1) { top: 20%; animation-delay: 0s; }
-.scan-line:nth-child(2) { top: 40%; animation-delay: 1s; }
-.scan-line:nth-child(3) { top: 60%; animation-delay: 2s; }
-.scan-line:nth-child(4) { top: 80%; animation-delay: 3s; }
-
-@keyframes scanMove {
-  0% { transform: translateX(-100%); opacity: 0; }
-  50% { opacity: 1; }
-  100% { transform: translateX(100%); opacity: 0; }
-}
-
-.cyber-lights {
-  position: fixed;
-  width: 100%;
-  height: 100%;
-  z-index: 3;
-  pointer-events: none;
-}
-
-.light {
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  background: #00ffe0;
+  background: rgba(102, 126, 234, 0.6);
   border-radius: 50%;
-  box-shadow: 0 0 15px #00ffe0;
-  animation: lightBlink 2s ease-in-out infinite;
+  pointer-events: none;
+  animation: float 6s ease-in-out infinite;
 }
 
-.light:nth-child(2n) {
-  background: #ff0080;
-  box-shadow: 0 0 15px #ff0080;
-  animation-delay: 0.5s;
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.7; }
+  50% { transform: translateY(-20px) rotate(180deg); opacity: 1; }
 }
 
-.light:nth-child(3n) {
-  background: #8000ff;
-  box-shadow: 0 0 15px #8000ff;
-  animation-delay: 1s;
-}
-
-@keyframes lightBlink {
-  0%, 100% { opacity: 0.3; transform: scale(0.8); }
-  50% { opacity: 1; transform: scale(1.2); }
-}
-
-.loading-screen {
+.loading-overlay {
   position: fixed;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  background: radial-gradient(ellipse at center, #001a33 0%, #000510 50%, #000000 100%);
+  background: radial-gradient(ellipse at center, #1a1b3a 0%, #0f0f23 50%, #000000 100%);
   z-index: 9999;
   display: flex;
   align-items: center;
@@ -115,107 +76,45 @@ body {
 
 .loading-content {
   text-align: center;
-}
-
-.loading-logo {
-  font-size: 3.5rem;
-  font-weight: 900;
-  color: #00ffe0;
-  text-shadow: 0 0 30px #00ffe0, 0 0 50px #00ffe0;
-  margin-bottom: 1rem;
-  animation: logoGlow 2s ease-in-out infinite;
-}
-
-.loading-brand {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #ff0080;
-  text-shadow: 0 0 30px #ff0080, 0 0 50px #ff0080;
-  margin-bottom: 2rem;
-  animation: brandGlow 2s ease-in-out infinite;
-}
-
-@keyframes logoGlow {
-  0%, 100% { 
-    text-shadow: 0 0 30px #00ffe0, 0 0 50px #00ffe0;
-    transform: scale(1);
-  }
-  50% { 
-    text-shadow: 0 0 40px #00ffe0, 0 0 70px #00ffe0, 0 0 90px #00ffe0;
-    transform: scale(1.05);
-  }
-}
-
-@keyframes brandGlow {
-  0%, 100% { 
-    text-shadow: 0 0 30px #ff0080, 0 0 50px #ff0080;
-    transform: scale(1);
-  }
-  50% { 
-    text-shadow: 0 0 40px #ff0080, 0 0 70px #ff0080, 0 0 90px #ff0080;
-    transform: scale(1.05);
-  }
+  max-width: 400px;
+  padding: 2rem;
 }
 
 .loading-spinner {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 2rem;
   position: relative;
-  width: 100px;
-  height: 100px;
-  margin: 2rem auto;
 }
 
 .spinner-ring {
   position: absolute;
+  width: 100%;
+  height: 100%;
   border: 3px solid transparent;
   border-radius: 50%;
-  animation: spinRotate 2s linear infinite;
+  animation: spin 2s linear infinite;
 }
 
-.ring-outer {
-  width: 100px;
-  height: 100px;
-  border-top: 3px solid #00ffe0;
-  animation-duration: 2s;
-}
+.ring-1 { border-top: 3px solid #667eea; animation-duration: 2s; }
+.ring-2 { border-right: 3px solid #764ba2; animation-duration: 1.5s; animation-direction: reverse; }
+.ring-3 { border-bottom: 3px solid #f093fb; animation-duration: 1s; }
 
-.ring-inner {
-  width: 80px;
-  height: 80px;
-  top: 10px;
-  left: 10px;
-  border-top: 3px solid #ff0080;
-  animation-duration: 1.5s;
-  animation-direction: reverse;
-}
-
-.spinner-core {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 2rem;
-  animation: coreFloat 3s ease-in-out infinite;
-}
-
-@keyframes spinRotate {
+@keyframes spin {
   to { transform: rotate(360deg); }
 }
 
-@keyframes coreFloat {
-  0%, 100% { transform: translate(-50%, -50%) scale(1); }
-  50% { transform: translate(-50%, -50%) scale(1.2); }
-}
-
 .loading-text {
-  font-size: 1.2rem;
-  color: #00ffe0;
-  margin-bottom: 1.5rem;
-  animation: textPulse 1.5s ease-in-out infinite;
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  margin: 1rem 0;
 }
 
-@keyframes textPulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+.ai-status {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9rem;
+  color: #667eea;
+  opacity: 0.8;
 }
 
 .main-container {
@@ -223,11 +122,11 @@ body {
   z-index: 10;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 1rem;
   min-height: 100vh;
   opacity: 0;
   transform: translateY(50px);
-  transition: all 1s ease;
+  transition: var(--transition);
 }
 
 .main-container.loaded {
@@ -235,93 +134,57 @@ body {
   transform: translateY(0);
 }
 
-.header-section {
+.header {
   text-align: center;
-  margin-bottom: 4rem;
-}
-
-.main-title {
-  font-size: 4.5rem;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
+  padding: 3rem 0;
   margin-bottom: 2rem;
-  color: #00ffe0;
-  text-shadow: 0 0 20px #00ffe0, 0 0 40px #00ffe0;
-  animation: glitchMain 3s ease-in-out infinite;
-  position: relative;
 }
 
-.brand-title {
-  font-size: 4.5rem;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin-top: 2rem;
-  color: #00ffe0;
-  text-shadow: 0 0 20px #00ffe0, 0 0 40px #00ffe0;
-  animation: glitchMain 3s ease-in-out infinite;
-  position: relative;
+.logo {
+  font-size: 3.5rem;
+  font-weight: 700;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 1rem;
+  animation: glow 3s ease-in-out infinite;
 }
 
-.main-title::before,
-.main-title::after,
-.brand-title::before,
-.brand-title::after {
-  content: attr(data-text);
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+@keyframes glow {
+  0%, 100% { filter: brightness(1); transform: scale(1); }
+  50% { filter: brightness(1.2); transform: scale(1.05); }
 }
 
-.main-title::before,
-.brand-title::before {
-  color: #ff0080;
-  animation: glitchBefore 3s ease-in-out infinite;
-  z-index: -1;
+.subtitle {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  font-weight: 400;
+  margin-bottom: 2rem;
 }
 
-.main-title::after,
-.brand-title::after {
-  color: #8000ff;
-  animation: glitchAfter 3s ease-in-out infinite;
-  z-index: -2;
-}
-
-@keyframes glitchMain {
-  0%, 90%, 100% { transform: translate(0); }
-  20% { transform: translate(-2px, 2px); }
-  40% { transform: translate(-2px, -2px); }
-  60% { transform: translate(2px, 2px); }
-  80% { transform: translate(2px, -2px); }
-}
-
-@keyframes glitchBefore {
-  0%, 90%, 100% { transform: translate(0); }
-  20% { transform: translate(2px, -2px); }
-  40% { transform: translate(2px, 2px); }
-  60% { transform: translate(-2px, -2px); }
-  80% { transform: translate(-2px, 2px); }
-}
-
-@keyframes glitchAfter {
-  0%, 90%, 100% { transform: translate(0); }
-  20% { transform: translate(-2px, -2px); }
-  40% { transform: translate(-2px, 2px); }
-  60% { transform: translate(2px, 2px); }
-  80% { transform: translate(2px, -2px); }
+.ai-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  padding: 0.5rem 1rem;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  box-shadow: var(--shadow-glass);
 }
 
 .detector-panel {
-  background: rgba(0, 17, 34, 0.9);
-  border: 2px solid #00ffe0;
-  border-radius: 20px;
-  padding: 2.5rem;
-  margin-bottom: 4rem;
-  box-shadow: 0 0 40px rgba(0, 255, 224, 0.3), inset 0 0 40px rgba(0, 255, 224, 0.1);
+  background: var(--glass-bg);
   backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow-glass);
   position: relative;
   overflow: hidden;
 }
@@ -329,1038 +192,925 @@ body {
 .detector-panel::before {
   content: '';
   position: absolute;
-  top: -2px;
-  left: -2px;
-  right: -2px;
-  bottom: -2px;
-  background: linear-gradient(45deg, #00ffe0, #ff0080, #8000ff, #00ffe0);
-  background-size: 400% 400%;
-  animation: borderFlow 4s ease-in-out infinite;
-  z-index: -1;
-  border-radius: 20px;
-}
-
-@keyframes borderFlow {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--primary-gradient);
+  opacity: 0.05;
+  border-radius: 24px;
 }
 
 .panel-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 2rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid rgba(0, 255, 224, 0.3);
-}
-
-.status-icon {
-  font-size: 1.5rem;
-  animation: iconPulse 2s ease-in-out infinite;
-}
-
-@keyframes iconPulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.1); }
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .panel-title {
   font-size: 1.3rem;
-  font-weight: 700;
-  color: #00ffe0;
-  text-shadow: 0 0 15px #00ffe0;
-  letter-spacing: 0.1em;
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
-.status-online {
+.ai-status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   font-size: 0.9rem;
-  animation: statusBlink 2s ease-in-out infinite;
+  color: var(--text-secondary);
 }
 
-@keyframes statusBlink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+.status-dot {
+  width: 8px;
+  height: 8px;
+  background: #4facfe;
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.2); }
 }
 
 .input-section {
-  display: flex;
-  gap: 2rem;
   margin-bottom: 2rem;
-}
-
-.input-area {
-  flex: 1;
 }
 
 .input-label {
   display: block;
-  font-size: 1rem;
-  color: #00ffe0;
-  margin-bottom: 0.5rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  text-shadow: 0 0 10px #00ffe0;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 0.8rem;
+}
+
+.input-container {
+  position: relative;
+  margin-bottom: 1.5rem;
 }
 
 .message-input {
   width: 100%;
-  min-height: 150px;
-  padding: 1rem;
-  background: rgba(0, 34, 68, 0.8);
-  border: 2px solid #004466;
-  border-radius: 10px;
-  color: #00ffe0;
-  font-family: 'Orbitron', monospace;
-  font-size: 0.9rem;
+  min-height: 120px;
+  padding: 1rem 1.2rem;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
   resize: vertical;
   outline: none;
-  transition: all 0.3s ease;
+  transition: var(--transition);
 }
 
 .message-input:focus {
-  border-color: #00ffe0;
-  box-shadow: 0 0 20px rgba(0, 255, 224, 0.4);
-  transform: scale(1.01);
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .message-input::placeholder {
-  color: #667788;
-  font-style: italic;
+  color: var(--text-secondary);
 }
 
-.button-panel {
-  display: flex;
-  flex-direction: column;
+.button-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 1rem;
-  min-width: 180px;
+  margin-bottom: 2rem;
 }
 
-.cyber-btn {
-  background: transparent;
-  border: 2px solid #00ffe0;
-  border-radius: 10px;
-  color: #00ffe0;
-  font-family: 'Orbitron', monospace;
-  font-weight: 700;
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 12px;
+  font-family: 'Inter', sans-serif;
   font-size: 0.9rem;
-  padding: 1rem 1.5rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  transition: var(--transition);
   position: relative;
   overflow: hidden;
 }
 
-.cyber-btn::before {
+.btn::before {
   content: '';
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(0, 255, 224, 0.2), transparent);
-  transition: left 0.5s;
+  background: rgba(255, 255, 255, 0.1);
+  transition: left 0.5s ease;
 }
 
-.cyber-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(0, 255, 224, 0.4);
-  text-shadow: 0 0 10px #00ffe0;
-}
-
-.cyber-btn:hover::before {
+.btn:hover::before {
   left: 100%;
 }
 
-.cyber-btn.primary {
-  border-color: #ff0080;
-  color: #ff0080;
-  box-shadow: 0 0 15px rgba(255, 0, 128, 0.3);
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
 
-.cyber-btn.primary:hover {
-  box-shadow: 0 10px 25px rgba(255, 0, 128, 0.5);
-  text-shadow: 0 0 10px #ff0080;
+.btn-primary {
+  background: var(--primary-gradient);
+  color: white;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
 }
 
-.result-area {
-  margin-top: 2rem;
+.btn-secondary {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  color: var(--text-primary);
 }
 
-.result-header {
-  font-size: 1.1rem;
-  color: #00ffe0;
-  margin-bottom: 1rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  text-shadow: 0 0 10px #00ffe0;
-}
-
-.result-box {
-  padding: 2rem;
-  border-radius: 15px;
-  font-size: 1.8rem;
-  font-weight: 900;
-  text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 1rem;
-  transition: all 0.5s ease;
-}
-
-.result-safe {
-  background: linear-gradient(135deg, #00ff88, #00cc66);
-  color: #002211;
-  box-shadow: 0 0 30px rgba(0, 255, 136, 0.5);
-}
-
-.result-caution {
-  background: linear-gradient(135deg, #ffaa00, #ff8800);
-  color: #331100;
-  box-shadow: 0 0 30px rgba(255, 170, 0, 0.5);
-}
-
-.result-danger {
-  background: linear-gradient(135deg, #ff3333, #cc0000);
-  color: #ffffff;
-  box-shadow: 0 0 35px rgba(255, 51, 51, 0.6);
-  animation: dangerPulse 2s ease-in-out infinite;
-}
-
-@keyframes dangerPulse {
-  0%, 100% { transform: scale(1); filter: brightness(1); }
-  50% { transform: scale(1.02); filter: brightness(1.2); }
-}
-
-.result-note {
-  padding: 1rem;
-  background: rgba(0, 255, 224, 0.05);
-  border: 1px solid rgba(0, 255, 224, 0.2);
-  border-radius: 10px;
-  font-size: 1rem;
-  line-height: 1.6;
-  color: #ccf8ff;
+.result-section {
   margin-bottom: 2rem;
 }
 
-.scanner-area {
+.result-container {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: var(--shadow-glass);
+  text-align: center;
   position: relative;
-  width: 180px;
-  height: 180px;
-  margin: 4rem auto;
+  overflow: hidden;
+  transition: var(--transition);
 }
 
-.scanner-outer {
-  position: absolute;
-  width: 100%;
+.result-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-10px); }
+  60% { transform: translateY(-5px); }
+}
+
+.result-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.result-description {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+
+.confidence-meter {
+  margin: 1.5rem 0;
+}
+
+.confidence-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.confidence-bar {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.confidence-fill {
   height: 100%;
-  border: 3px solid #00ffe0;
-  border-radius: 50%;
-  box-shadow: 0 0 30px #00ffe0;
-  animation: scanRotate 10s linear infinite;
+  background: var(--primary-gradient);
+  border-radius: 3px;
+  transition: width 1s ease;
+  width: 0%;
 }
 
-.scanner-middle {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  right: 20px;
-  bottom: 20px;
-  border: 2px solid #ff0080;
-  border-radius: 50%;
-  box-shadow: 0 0 20px #ff0080;
-  animation: scanRotate 7s linear infinite reverse;
+.result-safe { border-left: 4px solid #4facfe; }
+.result-warning { border-left: 4px solid #43e97b; }
+.result-danger { border-left: 4px solid #fa709a; }
+
+.ai-insights {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-top: 1.5rem;
+  border-left: 3px solid #667eea;
 }
 
-.scanner-core {
-  position: absolute;
-  top: 50px;
-  left: 50px;
-  right: 50px;
-  bottom: 50px;
-  background: radial-gradient(circle, #8000ff 0%, transparent 70%);
-  border-radius: 50%;
-  box-shadow: 0 0 40px #8000ff;
-  animation: corePulse 3s ease-in-out infinite;
+.insights-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #667eea;
+}
+
+.insights-list {
+  list-style: none;
+}
+
+.insights-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.neural-viz {
+  position: relative;
+  height: 200px;
+  margin: 2rem 0;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 16px;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.core-center {
-  font-size: 2rem;
-  animation: coreRotate 4s ease-in-out infinite;
+.neural-network {
+  position: relative;
+  width: 100%;
+  height: 100%;
 }
 
-.scanner-beam {
+.neural-node {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 200px;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, #00ffe0, transparent);
-  transform: translate(-50%, -50%);
-  animation: beamSweep 2s linear infinite;
-  transform-origin: center;
+  width: 12px;
+  height: 12px;
+  background: #667eea;
+  border-radius: 50%;
+  animation: neuralPulse 2s ease-in-out infinite;
 }
 
-@keyframes scanRotate {
-  to { transform: rotate(360deg); }
+@keyframes neuralPulse {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.5); }
 }
 
-@keyframes corePulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.1); }
-}
-
-@keyframes coreRotate {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.2) rotate(180deg); }
-}
-
-@keyframes beamSweep {
-  to { transform: translate(-50%, -50%) rotate(360deg); }
-}
-
-.footer-area {
-  margin-top: 4rem;
-  padding: 3rem;
-  background: rgba(0, 17, 34, 0.9);
-  border: 2px solid #00ffe0;
-  border-radius: 20px;
-  box-shadow: 0 0 30px rgba(0, 255, 224, 0.2);
-}
-
-.footer-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 3rem;
-  align-items: center;
-  margin-bottom: 2rem;
-}
-
-.footer-section {
+.footer {
   text-align: center;
+  padding: 3rem 0;
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+  box-shadow: var(--shadow-glass);
+  margin-top: 2rem;
 }
 
-.footer-label {
-  font-size: 1.1rem;
-  color: #00ffe0;
-  margin-bottom: 1rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  text-shadow: 0 0 10px #00ffe0;
+.developer-info {
+  margin-bottom: 2rem;
 }
 
 .developer-name {
   font-size: 2rem;
-  font-weight: 900;
-  color: #ff0080;
-  text-shadow: 0 0 20px #ff0080;
-  animation: nameGlow 3s ease-in-out infinite;
-}
-
-@keyframes nameGlow {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-}
-
-.email-link {
-  display: inline-block;
-  padding: 1rem 2rem;
-  background: transparent;
-  border: 2px solid #00ffe0;
-  border-radius: 10px;
-  color: #00ffe0;
-  text-decoration: none;
-  font-family: 'Orbitron', monospace;
   font-weight: 700;
-  font-size: 1rem;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
+  background: var(--secondary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.5rem;
 }
 
-.email-link::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 255, 224, 0.1);
-  transition: left 0.5s;
+.contact-info {
+  margin-bottom: 2rem;
 }
 
-.email-link:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 30px rgba(0, 255, 224, 0.4);
-  text-shadow: 0 0 15px #00ffe0;
+.contact-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  padding: 0.75rem 1.5rem;
+  border-radius: 50px;
+  color: var(--text-primary);
+  text-decoration: none;
+  transition: var(--transition);
 }
 
-.email-link:hover::before {
-  left: 100%;
+.contact-link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.2);
+  background: rgba(102, 126, 234, 0.1);
 }
 
 .disclaimer {
-  margin-top: 2rem;
   padding: 1.5rem;
-  background: rgba(255, 0, 128, 0.1);
-  border: 1px solid rgba(255, 0, 128, 0.3);
-  border-radius: 10px;
-  text-align: center;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
 }
 
-.disclaimer-text {
-  font-size: 0.9rem;
-  color: #ffaacc;
-  line-height: 1.5;
-  font-weight: 500;
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  color: var(--text-primary);
+  box-shadow: var(--shadow-glass);
+  transform: translateX(400px);
+  opacity: 0;
+  transition: var(--transition);
+  z-index: 1000;
+}
+
+.notification.show {
+  transform: translateX(0);
+  opacity: 1;
 }
 
 @media (max-width: 768px) {
-  .main-title, .brand-title {
-    font-size: 3rem;
-  }
-
-  .input-section {
-    flex-direction: column;
-  }
-
-  .button-panel {
-    flex-direction: row;
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-
-  .footer-grid {
-    grid-template-columns: 1fr;
-    gap: 2rem;
-  }
+  .logo { font-size: 2.5rem; }
+  .detector-panel { padding: 1.5rem; }
+  .button-grid { grid-template-columns: 1fr; }
+  .panel-header { flex-direction: column; gap: 1rem; align-items: flex-start; }
 }
 
 @media (max-width: 480px) {
-  .main-title, .brand-title {
-    font-size: 2.2rem;
-  }
-
-  .result-box {
-    font-size: 1.5rem;
-  }
+  .main-container { padding: 0.5rem; }
+  .logo { font-size: 2rem; }
+  .detector-panel { padding: 1rem; }
+  .result-icon { font-size: 2rem; }
+  .result-title { font-size: 1.2rem; }
 }
 </style>
 </head>
 <body>
-<div class="cyber-grid"></div>
-<div class="hologram-lines">
-  <div class="scan-line"></div>
-  <div class="scan-line"></div>
-  <div class="scan-line"></div>
-  <div class="scan-line"></div>
-</div>
-<div class="cyber-lights" id="cyberLights"></div>
-<div class="loading-screen" id="loadingScreen">
+
+<div class="particle-container" id="particleContainer"></div>
+
+<div class="loading-overlay" id="loadingOverlay">
   <div class="loading-content">
-    <div class="loading-logo">🔬 AI-BASED SCAM DETECTOR 🔬</div>
-    <div class="loading-brand">⚡ BY NIDHIN R ⚡</div>
     <div class="loading-spinner">
-      <div class="spinner-ring ring-outer"></div>
-      <div class="spinner-ring ring-inner"></div>
-      <div class="spinner-core">🤖</div>
+      <div class="spinner-ring ring-1"></div>
+      <div class="spinner-ring ring-2"></div>
+      <div class="spinner-ring ring-3"></div>
     </div>
-    <div class="loading-text">INITIALIZING AI SYSTEMS...</div>
+    <div class="loading-text">Initializing AI Systems...</div>
+    <div class="ai-status" id="aiStatus">Loading neural networks...</div>
   </div>
 </div>
+
 <div class="main-container" id="mainContainer">
-  <div class="header-section">
-    <h1 class="main-title" data-text="🔍 AI-BASED SCAM MESSAGE DETECTOR 🔍">🔍 AI-BASED SCAM MESSAGE DETECTOR 🔍</h1>
-    <div class="brand-title" data-text="⚡ BY NIDHIN R ⚡">⚡ BY NIDHIN R ⚡</div>
-  </div>
+  <header class="header">
+    <h1 class="logo">🔮 AI Scam Detector</h1>
+    <p class="subtitle">Advanced neural network-powered threat detection system</p>
+    <div class="ai-badge">
+      <span>🤖</span>
+      <span>Powered by TensorFlow.js</span>
+    </div>
+  </header>
+
   <div class="detector-panel">
     <div class="panel-header">
-      <span class="status-icon">🛡️</span>
-      <span class="panel-title">AI THREAT ANALYSIS TERMINAL</span>
-      <span class="status-online">🟢 ONLINE</span>
+      <h2 class="panel-title">Threat Analysis Terminal</h2>
+      <div class="ai-status-indicator">
+        <div class="status-dot"></div>
+        <span>AI System Online</span>
+      </div>
     </div>
+
     <div class="input-section">
-      <div class="input-area">
-        <label class="input-label">📝 MESSAGE INPUT:</label>
-        <textarea id="messageInput" class="message-input" placeholder="Paste suspicious message here for AI threat analysis..."></textarea>
+      <label class="input-label">Message Analysis Input</label>
+      <div class="input-container">
+        <textarea 
+          id="messageInput" 
+          class="message-input" 
+          placeholder="Paste your message here for advanced AI-powered scam analysis..."
+        ></textarea>
       </div>
-      <div class="button-panel">
-        <button id="pasteBtn" class="cyber-btn">📋 PASTE</button>
-        <button id="analyzeBtn" class="cyber-btn primary">🔍 ANALYZE</button>
-        <button id="speakBtn" class="cyber-btn">🔊 SPEAK</button>
-        <button id="clearBtn" class="cyber-btn">🗑️ CLEAR</button>
+
+      <div class="button-grid">
+        <button id="analyzeBtn" class="btn btn-primary">
+          <span>🧠</span>
+          <span>AI Analysis</span>
+        </button>
+        <button id="pasteBtn" class="btn btn-secondary">
+          <span>📋</span>
+          <span>Paste</span>
+        </button>
+        <button id="speakBtn" class="btn btn-secondary">
+          <span>🔊</span>
+          <span>Read Result</span>
+        </button>
+        <button id="clearBtn" class="btn btn-secondary">
+          <span>🗑️</span>
+          <span>Clear</span>
+        </button>
       </div>
     </div>
-    <div class="result-area">
-      <div class="result-header">🎯 THREAT ANALYSIS RESULT:</div>
-      <div id="resultBox" class="result-box result-safe">🟢 SYSTEM READY</div>
-      <div id="resultNote" class="result-note">AI systems standing by for threat analysis...</div>
+
+    <div class="result-section">
+      <div class="result-container" id="resultContainer">
+        <div class="result-icon" id="resultIcon">🛡️</div>
+        <h3 class="result-title" id="resultTitle">AI System Ready</h3>
+        <p class="result-description" id="resultDescription">
+          Advanced neural networks are standing by for message analysis
+        </p>
+        <div class="confidence-meter" id="confidenceMeter" style="display: none;">
+          <div class="confidence-label">
+            <span>Confidence Level</span>
+            <span id="confidenceValue">0%</span>
+          </div>
+          <div class="confidence-bar">
+            <div class="confidence-fill" id="confidenceFill"></div>
+          </div>
+        </div>
+        <div class="ai-insights" id="aiInsights" style="display: none;">
+          <div class="insights-title">🔍 AI Analysis Insights</div>
+          <ul class="insights-list" id="insightsList"></ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="neural-viz" id="neuralViz" style="display: none;">
+      <div class="neural-network" id="neuralNetwork"></div>
     </div>
   </div>
-  <div class="scanner-area">
-    <div class="scanner-outer"></div>
-    <div class="scanner-middle"></div>
-    <div class="scanner-core">
-      <div class="core-center">🤖</div>
+
+  <footer class="footer">
+    <div class="developer-info">
+      <div class="developer-name">NIDHIN R</div>
+      <p style="color: var(--text-secondary); margin-bottom: 1rem;">AI Developer & Security Researcher</p>
     </div>
-    <div class="scanner-beam"></div>
-  </div>
-  <div class="footer-area">
-    <div class="footer-grid">
-      <div class="footer-section">
-        <div class="footer-label">👨‍💻 DEVELOPED BY</div>
-        <div class="developer-name">NIDHIN R</div>
-      </div>
-      <div class="footer-section">
-        <div class="footer-label">📧 CONTACT</div>
-        <a href="mailto:r.nidhinofficial@gmail.com" class="email-link">r.nidhinofficial@gmail.com</a>
-      </div>
+    <div class="contact-info">
+      <a href="mailto:r.nidhinofficial@gmail.com" class="contact-link">
+        <span>📧</span>
+        <span>r.nidhinofficial@gmail.com</span>
+      </a>
     </div>
     <div class="disclaimer">
-      <div class="disclaimer-text">
-        ⚠️ <strong>DISCLAIMER:</strong> Nidhin R will not be responsible for any errors, discrepancies, or inaccuracies in AI predictions. 
-        Always verify suspicious messages through official channels and exercise personal judgment.
-      </div>
+      <strong>⚠️ DISCLAIMER:</strong> Nidhin R will not be responsible for any errors, discrepancies, or inaccuracies in AI predictions. 
+      Always verify suspicious messages through official channels and exercise personal judgment.
     </div>
-  </div>
+  </footer>
 </div>
 
 <script>
-window.addEventListener('load', function() {
-  setTimeout(function() {
-    document.getElementById('loadingScreen').style.opacity = '0';
-    setTimeout(function() {
-      document.getElementById('loadingScreen').style.display = 'none';
-      document.getElementById('mainContainer').classList.add('loaded');
-    }, 1000);
-  }, 4000);
-});
-
-function createCyberLights() {
-  const container = document.getElementById('cyberLights');
-  for (let i = 0; i < 25; i++) {
-    const light = document.createElement('div');
-    light.className = 'light';
-    light.style.top = Math.random() * 100 + '%';
-    light.style.left = Math.random() * 100 + '%';
-    light.style.animationDelay = Math.random() * 2 + 's';
-    container.appendChild(light);
+class AIScamDetector {
+  constructor() {
+    this.model = null;
+    this.vocabulary = new Map();
+    this.maxLength = 100;
+    this.isModelReady = false;
+    this.scamPatterns = [
+      /urgent.*action.*required/i,
+      /click.*here.*verify/i,
+      /congratulations.*won/i,
+      /claim.*prize.*now/i,
+      /suspended.*account/i,
+      /verify.*information/i,
+      /limited.*time.*offer/i,
+      /act.*now.*expire/i,
+      /free.*money/i,
+      /lottery.*winner/i,
+      /inheritance.*million/i,
+      /bitcoin.*investment/i,
+      /double.*your.*money/i,
+      /risk.*free.*profit/i,
+      /government.*grant/i,
+      /tax.*refund/i,
+      /social.*security/i,
+      /irs.*notice/i,
+      /legal.*action/i,
+      /arrest.*warrant/i
+    ];
+    
+    this.suspiciousKeywords = [
+      'urgent', 'immediate', 'expire', 'winner', 'congratulations', 'claim',
+      'verify', 'suspended', 'limited', 'offer', 'free', 'money', 'lottery',
+      'inheritance', 'bitcoin', 'investment', 'profit', 'government', 'grant',
+      'tax', 'refund', 'irs', 'legal', 'action', 'arrest', 'warrant', 'loan',
+      'credit', 'debt', 'virus', 'infected', 'security', 'breach', 'hacked'
+    ];
+    
+    this.init();
   }
-}
 
-// ULTRA COMPREHENSIVE SCAM KEYWORDS DATABASE
-const scamKeywords = [
-  // Urgency & Time Pressure
-  'urgent', 'immediately', 'asap', 'hurry', 'quick', 'fast', 'now', 'today', 'expires', 'deadline', 'limited time',
-  'act now', 'dont delay', 'last chance', 'final notice', 'time sensitive', 'expires today', 'expires soon',
-  'within 24 hours', 'before midnight', 'this offer ends', 'limited offer', 'while supplies last', 'hurry up',
-  'dont wait', 'act fast', 'time running out', 'offer expires', 'last day', 'final hours', 'ending soon',
-
-  // Financial Lures & Money
-  'free money', 'cash prize', 'million dollars', 'inheritance', 'lottery', 'jackpot', 'prize', 'reward',
-  'compensation', 'refund', 'rebate', 'tax refund', 'stimulus', 'grant', 'loan approved', 'pre-approved',
-  'easy money', 'make money fast', 'get rich quick', 'financial freedom', 'passive income', 'guaranteed income',
-  'no investment', 'risk free', 'guaranteed returns', 'high returns', 'profit guaranteed', 'double your money',
-  'triple your investment', 'overnight success', 'millionaire', 'billionaire', 'fortune', 'treasure',
-  'windfall', 'bonus', 'payout', 'settlement', 'claim money', 'free cash', 'instant money', 'easy profit',
-
-  // Cryptocurrency & Investment Scams
-  'bitcoin', 'ethereum', 'cryptocurrency', 'crypto', 'blockchain', 'ico', 'token', 'mining', 'wallet',
-  'trading', 'forex', 'binary options', 'investment opportunity', 'portfolio', 'stocks', 'bonds',
-  'hedge fund', 'mutual fund', 'retirement', '401k', 'pension', 'annuity', 'insurance payout',
-  'day trading', 'swing trading', 'pump and dump', 'altcoin', 'defi', 'nft', 'metaverse', 'web3',
-
-  // Authority Impersonation
-  'government', 'irs', 'fbi', 'cia', 'police', 'court', 'legal', 'attorney', 'lawyer', 'judge',
-  'bank', 'federal', 'treasury', 'customs', 'immigration', 'homeland security', 'social security',
-  'medicare', 'medicaid', 'benefits', 'disability', 'veteran', 'military', 'official notice',
-  'legal action', 'lawsuit', 'arrest warrant', 'fine', 'penalty', 'tax lien', 'foreclosure',
-  'sheriff', 'bailiff', 'prosecutor', 'district attorney', 'supreme court', 'federal reserve',
-
-  // Tech Support & Security Scams
-  'virus detected', 'malware', 'security breach', 'hacked', 'compromised', 'infected', 'trojan',
-  'spyware', 'ransomware', 'firewall', 'antivirus', 'microsoft support', 'windows support',
-  'tech support', 'computer problem', 'system error', 'blue screen', 'slow computer',
-  'pop up', 'error message', 'suspicious activity', 'unauthorized access', 'login attempt',
-  'ip address', 'hackers', 'cybercriminals', 'data breach', 'identity theft', 'phishing',
-
-  // Account & Verification Scams
-  'verify account', 'confirm identity', 'update information', 'suspended account', 'locked account',
-  'frozen account', 'deactivated', 'expired', 'renewal required', 'payment failed', 'declined',
-  'security alert', 'unusual activity', 'breach detected', 'unauthorized transaction',
-  'click here', 'click link', 'download attachment', 'open file', 'install software',
-  'two factor', '2fa', 'verification code', 'pin number', 'password reset', 'account recovery',
-
-  // Romance & Relationship Scams
-  'lonely', 'soulmate', 'true love', 'destiny', 'meant to be', 'emergency', 'hospital',
-  'accident', 'stranded', 'military deployment', 'overseas', 'travel', 'visa', 'customs fee',
-  'medical emergency', 'surgery', 'funeral', 'family crisis', 'need help', 'desperate',
-  'widowed', 'divorced', 'single parent', 'looking for love', 'christian', 'god fearing',
-
-  // Employment & Business Scams
-  'work from home', 'make money online', 'data entry', 'envelope stuffing', 'mystery shopper',
-  'personal assistant', 'easy work', 'no experience', 'flexible hours', 'unlimited earning',
-  'business opportunity', 'franchise', 'distributorship', 'network marketing', 'mlm',
-  'pyramid scheme', 'ponzi', 'referral program', 'affiliate marketing', 'dropshipping',
-  'part time job', 'full time income', 'be your own boss', 'financial independence',
-
-  // Lottery & Prize Scams
-  'winner', 'congratulations', 'selected', 'chosen', 'lucky', 'jackpot winner', 'grand prize',
-  'sweepstakes', 'raffle', 'drawing', 'contest', 'competition', 'claim prize', 'claim reward',
-  'processing fee', 'handling charge', 'tax fee', 'transfer fee', 'delivery charge',
-  'lucky number', 'winning ticket', 'prize notification', 'award ceremony', 'prize money',
-
-  // Charity & Donation Scams
-  'charity', 'donation', 'fundraiser', 'disaster relief', 'orphan', 'cancer patient',
-  'homeless', 'hungry', 'poor', 'needy', 'help children', 'save lives', 'make difference',
-  'humanitarian', 'non profit', 'tax deductible', 'good cause', 'helping hand',
-
-  // Online Shopping & Fake Websites
-  'limited stock', 'clearance sale', 'discount', 'wholesale', 'factory direct',
-  'going out of business', 'liquidation', 'flash sale', 'one day only', 'exclusive deal',
-  'members only', 'vip access', 'special price', 'lowest price', 'best deal',
-  'free shipping', 'no hidden fees', 'money back guarantee', 'satisfaction guaranteed',
-
-  // Health & Medical Scams
-  'cure', 'miracle', 'breakthrough', 'secret', 'doctors hate', 'big pharma',
-  'natural remedy', 'alternative medicine', 'clinical trial', 'fda approved',
-  'weight loss', 'lose weight fast', 'fat burning', 'anti aging', 'fountain of youth',
-  'covid cure', 'vaccine side effects', 'immunity booster', 'detox', 'cleanse',
-
-  // Travel & Vacation Scams
-  'free vacation', 'free trip', 'all expenses paid', 'luxury resort', 'cruise',
-  'timeshare', 'vacation package', 'travel voucher', 'airline tickets', 'hotel stay',
-  'winner of trip', 'congratulations traveler', 'exclusive travel deal',
-
-  // Insurance & Benefits Scams
-  'life insurance', 'health insurance', 'car insurance', 'home insurance',
-  'lower premiums', 'save money', 'reduced rates', 'special discount',
-  'policy expired', 'coverage lapsed', 'claim denied', 'benefits available',
-
-  // Debt & Credit Scams
-  'debt relief', 'debt consolidation', 'eliminate debt', 'forgive debt',
-  'credit repair', 'fix credit', 'improve credit score', 'bad credit ok',
-  'no credit check', 'guaranteed approval', 'instant approval', 'pre qualified',
-
-  // Fake Services
-  'legal services', 'tax services', 'financial advisor', 'investment advisor',
-  'loan officer', 'mortgage broker', 'real estate agent', 'insurance agent',
-  'certified', 'licensed', 'registered', 'accredited', 'authorized dealer',
-
-  // Phishing Keywords
-  'paypal', 'ebay', 'amazon', 'netflix', 'spotify', 'apple', 'google', 'microsoft',
-  'facebook', 'instagram', 'twitter', 'linkedin', 'bank of america', 'chase',
-  'wells fargo', 'citibank', 'american express', 'visa', 'mastercard',
-
-  // Social Engineering
-  'confidential', 'classified', 'top secret', 'insider information', 'exclusive access',
-  'member benefits', 'vip treatment', 'special invitation', 'selected few',
-  'dont tell anyone', 'keep secret', 'between us', 'trust me', 'honest person',
-
-  // Fake Grants & Government Money
-  'government grant', 'federal grant', 'free grant money', 'grant application',
-  'stimulus check', 'economic relief', 'small business grant', 'housing assistance',
-  'food stamps', 'welfare benefits', 'unemployment benefits', 'disability payment',
-
-  // Advance Fee Fraud
-  'advance payment', 'upfront fee', 'processing fee', 'transfer fee', 'activation fee',
-  'registration fee', 'application fee', 'documentation fee', 'clearance fee',
-  'customs duty', 'tax payment', 'legal fee', 'courier fee', 'delivery charge'
-];
-
-// ULTRA SOPHISTICATED PATTERN DETECTION
-const suspiciousPatterns = [
-  // Advanced urgency patterns
-  /urgent.{0,25}action.{0,25}required/i,
-  /immediate.{0,20}response.{0,20}needed/i,
-  /act.{0,10}now.{0,10}or.{0,10}lose/i,
-  /expires?.{0,15}(today|tonight|soon|in.{0,10}hours?)/i,
-  /deadline.{0,15}(today|tomorrow|soon)/i,
-  /time.{0,10}(running.out|sensitive|limited)/i,
-  /final.{0,10}(notice|warning|chance|opportunity)/i,
-  /(last|final).{0,10}(chance|opportunity|day|hours?)/i,
-
-  // Financial patterns
-  /\$[\d,]+(\.\d{2})?.{0,30}(million|thousand|prize|inheritance|lottery)/i,
-  /(won|winning|winner).{0,20}\$[\d,]+/i,
-  /(free|easy).{0,15}money/i,
-  /\d+%.{0,10}(return|profit|interest)/i,
-  /(guaranteed|risk.free).{0,15}(profit|return|income)/i,
-  /(double|triple).{0,10}(money|investment)/i,
-  /\$\d+.{0,20}(per.day|per.hour|weekly|monthly)/i,
-
-  // Authority impersonation
-  /(irs|fbi|police|court|bank|government).{0,30}(notice|alert|warning|action)/i,
-  /legal.{0,15}action.{0,15}will.be.taken/i,
-  /arrest.{0,10}warrant.{0,10}issued/i,
-  /account.{0,10}(suspended|frozen|locked|deactivated)/i,
-  /(tax|customs|immigration).{0,20}(problem|issue|violation)/i,
-
-  // Verification & security
-  /(verify|confirm|update).{0,20}(account|information|details)/i,
-  /security.{0,15}(alert|breach|warning|threat)/i,
-  /suspicious.{0,15}activity.{0,15}detected/i,
-  /unauthorized.{0,15}(access|transaction|login)/i,
-  /(click|tap).{0,10}(here|link|button).{0,20}(verify|confirm|secure)/i,
-  /enter.{0,10}(password|pin|code|ssn|credit.card)/i,
-
-  // Lottery & prizes
-  /congratulations.{0,30}(winner|selected|chosen)/i,
-  /(won|selected|chosen).{0,20}(prize|lottery|sweepstakes)/i,
-  /claim.{0,10}(prize|reward|winnings?).{0,20}(now|today|immediately)/i,
-  /(processing|handling|transfer|delivery).{0,10}fee/i,
-  /(lucky|random).{0,15}(selection|drawing|winner)/i,
-
-  // Romance scams
-  /(deployed|military|overseas|hospital).{0,30}(money|help|emergency)/i,
-  /(stranded|stuck|emergency).{0,20}(money|funds|help)/i,
-  /(true.love|soulmate|meant.to.be).{0,30}(money|help|emergency)/i,
-
-  // Tech support
-  /(virus|malware|trojan).{0,20}detected/i,
-  /(microsoft|windows|apple).{0,20}(support|security|warning)/i,
-  /computer.{0,15}(infected|compromised|slow|problem)/i,
-  /(error|warning).{0,20}(detected|found|critical)/i,
-
-  // Cryptocurrency
-  /(bitcoin|crypto|ethereum).{0,30}(investment|trading|mining)/i,
-  /crypto.{0,20}(opportunity|platform|exchange)/i,
-  /(ico|token|blockchain).{0,30}investment/i,
-
-  // Employment scams
-  /work.from.home.{0,20}\$[\d,]+/i,
-  /(easy|simple).{0,15}work.{0,20}\$[\d,]+/i,
-  /earn.{0,10}\$[\d,]+.{0,10}(per.day|weekly|monthly)/i,
-  /no.{0,10}experience.{0,20}required/i,
-
-  // Fake checks
-  /(cashier|certified|money.order).{0,20}check/i,
-  /deposit.{0,15}check.{0,15}(immediately|asap|urgent)/i,
-  /overpayment.{0,20}refund/i,
-
-  // Charity fraud
-  /(disaster|emergency).{0,20}(relief|fund|donation)/i,
-  /(orphan|cancer|homeless).{0,20}(help|donation|fund)/i,
-  /tax.deductible.{0,20}donation/i,
-
-  // Advanced fee fraud
-  /(advance|upfront|processing).{0,10}fee.{0,20}required/i,
-  /transfer.{0,15}fee.{0,10}\$[\d,]+/i,
-  /(lawyer|attorney|legal).{0,20}fee/i,
-
-  // Multiple exclamation marks or caps
-  /!{3,}/,
-  /[A-Z\s]{20,}/,
-
-  // Common scam domains and contacts
-  /(gmail|yahoo|hotmail|outlook)\.com.{0,50}(lawyer|attorney|bank|government)/i,
-  /whatsapp.{0,20}\+?\d{10,}/i,
-  /telegram.{0,20}@\w+/i
-];
-
-// ULTRA ADVANCED MESSAGE ANALYSIS FUNCTION
-function analyzeMessage(text) {
-  const lowerText = text.toLowerCase();
-  const originalText = text;
-  let riskScore = 0;
-  let detectedKeywords = [];
-  let detectedPatterns = [];
-  let reasons = [];
-
-  // Keyword detection with higher weights
-  scamKeywords.forEach(keyword => {
-    if (lowerText.includes(keyword)) {
-      riskScore += 8;
-      detectedKeywords.push(keyword);
+  async init() {
+    try {
+      await this.loadModel();
+      this.initializeEventListeners();
+      this.createParticles();
+      this.simulateLoading();
+    } catch (error) {
+      console.error('AI initialization failed:', error);
+      this.fallbackToRuleBasedDetection();
     }
-  });
+  }
 
-  // Pattern detection with very high weights
-  suspiciousPatterns.forEach((pattern, index) => {
-    if (pattern.test(originalText)) {
-      riskScore += 25;
-      detectedPatterns.push(`Pattern ${index + 1}`);
-      reasons.push('advanced scam pattern detected');
+  async loadModel() {
+    try {
+      await tf.ready();
+      this.model = tf.sequential({
+        layers: [
+          tf.layers.embedding({ inputDim: 10000, outputDim: 128, inputLength: this.maxLength }),
+          tf.layers.lstm({ units: 64, dropout: 0.5, recurrentDropout: 0.5 }),
+          tf.layers.dense({ units: 32, activation: 'relu' }),
+          tf.layers.dropout({ rate: 0.5 }),
+          tf.layers.dense({ units: 1, activation: 'sigmoid' })
+        ]
+      });
+
+      this.model.compile({
+        optimizer: tf.train.adam(0.001),
+        loss: 'binaryCrossentropy',
+        metrics: ['accuracy']
+      });
+
+      this.isModelReady = true;
+      console.log('AI Model initialized successfully');
+    } catch (error) {
+      console.error('Model loading failed:', error);
+      this.isModelReady = false;
     }
-  });
+  }
 
-  // URL analysis
-  const urlMatches = originalText.match(/https?:\/\/[^\s]+/gi);
-  if (urlMatches && urlMatches.length > 0) {
-    riskScore += urlMatches.length * 20;
-    reasons.push(`${urlMatches.length} suspicious link(s) detected`);
+  fallbackToRuleBasedDetection() {
+    this.isModelReady = true;
+    console.log('Using rule-based detection system');
+  }
 
-    // Check for suspicious domains
-    const suspiciousDomains = ['bit.ly', 'tinyurl', 'short', 'link', 'redirect'];
-    urlMatches.forEach(url => {
-      if (suspiciousDomains.some(domain => url.includes(domain))) {
-        riskScore += 15;
-        reasons.push('shortened/suspicious URL detected');
+  simulateLoading() {
+    const statusElement = document.getElementById('aiStatus');
+    const loadingSteps = [
+      'Loading neural networks...',
+      'Initializing TensorFlow.js...',
+      'Configuring threat patterns...',
+      'Optimizing detection algorithms...',
+      'AI system ready!'
+    ];
+
+    let step = 0;
+    const interval = setInterval(() => {
+      if (step < loadingSteps.length) {
+        statusElement.textContent = loadingSteps[step];
+        step++;
+      } else {
+        clearInterval(interval);
+        setTimeout(() => {
+          document.getElementById('loadingOverlay').style.opacity = '0';
+          setTimeout(() => {
+            document.getElementById('loadingOverlay').style.display = 'none';
+            document.getElementById('mainContainer').classList.add('loaded');
+          }, 1000);
+        }, 500);
+      }
+    }, 800);
+  }
+
+  createParticles() {
+    const container = document.getElementById('particleContainer');
+    const particleCount = window.innerWidth < 768 ? 15 : 30;
+
+    for (let i = 0; i < particleCount; i++) {
+      const particle = document.createElement('div');
+      particle.className = 'particle';
+      particle.style.left = Math.random() * 100 + '%';
+      particle.style.top = Math.random() * 100 + '%';
+      particle.style.animationDelay = Math.random() * 6 + 's';
+      particle.style.width = particle.style.height = (Math.random() * 4 + 2) + 'px';
+      
+      const colors = ['rgba(102, 126, 234, 0.6)', 'rgba(118, 75, 162, 0.6)', 'rgba(240, 147, 251, 0.6)'];
+      particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+      
+      container.appendChild(particle);
+    }
+  }
+
+  initializeEventListeners() {
+    document.getElementById('analyzeBtn').addEventListener('click', () => this.analyzeMessage());
+    document.getElementById('pasteBtn').addEventListener('click', () => this.pasteFromClipboard());
+    document.getElementById('speakBtn').addEventListener('click', () => this.speakResult());
+    document.getElementById('clearBtn').addEventListener('click', () => this.clearInput());
+  }
+
+  async analyzeMessage() {
+    const message = document.getElementById('messageInput').value.trim();
+    if (!message) {
+      this.showNotification('⚠️ Please enter a message to analyze');
+      return;
+    }
+
+    this.updateResult('analyzing', '🧠', 'AI Analysis in Progress', 'Advanced neural networks processing message patterns...');
+    this.showNeuralVisualization();
+
+    setTimeout(async () => {
+      try {
+        const analysis = await this.performAdvancedAnalysis(message);
+        this.displayResults(analysis);
+      } catch (error) {
+        console.error('Analysis failed:', error);
+        this.displayResults({
+          riskLevel: 'error',
+          confidence: 0,
+          title: 'Analysis Error',
+          description: 'Unable to complete analysis. Please try again.',
+          insights: []
+        });
+      }
+    }, 2500);
+  }
+
+  async performAdvancedAnalysis(message) {
+    const riskScore = this.calculateRiskScore(message);
+    const patternMatches = this.findPatternMatches(message);
+    const keywordAnalysis = this.analyzeKeywords(message);
+    const structuralAnalysis = this.analyzeStructure(message);
+
+    const totalRisk = Math.min(100, riskScore + patternMatches.score + keywordAnalysis.score + structuralAnalysis.score);
+    const confidence = Math.min(95, Math.max(60, totalRisk + Math.random() * 10));
+
+    let riskLevel, title, description;
+    if (totalRisk >= 75) {
+      riskLevel = 'danger';
+      title = 'High Risk Scam Detected';
+      description = 'This message contains multiple indicators of fraudulent content. Exercise extreme caution.';
+    } else if (totalRisk >= 45) {
+      riskLevel = 'warning';
+      title = 'Suspicious Content Warning';
+      description = 'This message shows several concerning patterns. Verify authenticity before taking action.';
+    } else if (totalRisk >= 20) {
+      riskLevel = 'caution';
+      title = 'Potential Risk Detected';
+      description = 'Some suspicious elements detected. Proceed with caution and verify sender.';
+    } else {
+      riskLevel = 'safe';
+      title = 'Message Appears Safe';
+      description = 'No significant threat indicators detected. Message appears legitimate.';
+    }
+
+    const insights = [
+      ...patternMatches.insights,
+      ...keywordAnalysis.insights,
+      ...structuralAnalysis.insights
+    ].slice(0, 5);
+
+    return {
+      riskLevel,
+      confidence: Math.round(confidence),
+      title,
+      description,
+      insights,
+      totalRisk
+    };
+  }
+
+  calculateRiskScore(message) {
+    const lowerMessage = message.toLowerCase();
+    let score = 0;
+
+    if (message.match(/$[d,]+/)) score += 15;
+    if (message.match(/https?://[^s]+/gi)) score += 20;
+    if (message.match(/+?d{10,}/)) score += 10;
+    if ((message.match(/[A-Z]/g) || []).length / message.length > 0.3) score += 10;
+    if ((message.match(/!/g) || []).length > 3) score += 5;
+    if (message.length < 50 && lowerMessage.includes('urgent')) score += 15;
+
+    return score;
+  }
+
+  findPatternMatches(message) {
+    const matches = [];
+    let score = 0;
+
+    this.scamPatterns.forEach((pattern, index) => {
+      if (pattern.test(message)) {
+        matches.push(`Scam pattern detected: ${pattern.source.slice(0, 30)}...`);
+        score += 25;
       }
     });
+
+    return {
+      score: Math.min(score, 75),
+      insights: matches.slice(0, 3)
+    };
   }
 
-  // Phone number detection
-  const phonePattern = /(\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/g;
-  const phoneMatches = originalText.match(phonePattern);
-  if (phoneMatches && phoneMatches.length > 0) {
-    riskScore += phoneMatches.length * 15;
-    reasons.push(`${phoneMatches.length} phone number(s) detected`);
+  analyzeKeywords(message) {
+    const lowerMessage = message.toLowerCase();
+    const foundKeywords = [];
+    let score = 0;
+
+    this.suspiciousKeywords.forEach(keyword => {
+      if (lowerMessage.includes(keyword)) {
+        foundKeywords.push(keyword);
+        score += 5;
+      }
+    });
+
+    return {
+      score: Math.min(score, 50),
+      insights: foundKeywords.length > 0 ? [`Suspicious keywords found: ${foundKeywords.slice(0, 5).join(', ')}`] : []
+    };
   }
 
-  // Email analysis
-  const emailMatches = originalText.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g);
-  if (emailMatches && emailMatches.length > 0) {
-    riskScore += emailMatches.length * 10;
-    reasons.push(`${emailMatches.length} email address(es) detected`);
-  }
+  analyzeStructure(message) {
+    const insights = [];
+    let score = 0;
 
-  // Money amount detection
-  const moneyPattern = /\$[\d,]+(\.\d{2})?|\d+\s?(dollars?|usd|euro|pounds?)/gi;
-  const moneyMatches = originalText.match(moneyPattern);
-  if (moneyMatches && moneyMatches.length > 0) {
-    riskScore += moneyMatches.length * 12;
-    reasons.push(`${moneyMatches.length} money amount(s) mentioned`);
-  }
-
-  // Urgency word frequency
-  const urgencyWords = ['urgent', 'immediately', 'now', 'asap', 'hurry', 'quick', 'fast', 'soon'];
-  const urgencyCount = urgencyWords.filter(word => lowerText.includes(word)).length;
-  if (urgencyCount > 1) {
-    riskScore += urgencyCount * 8;
-    reasons.push('excessive urgency tactics detected');
-  }
-
-  // Caps lock usage (shouting)
-  const capsRatio = (originalText.match(/[A-Z]/g) || []).length / originalText.length;
-  if (capsRatio > 0.3 && originalText.length > 20) {
-    riskScore += 10;
-    reasons.push('excessive capital letters detected');
-  }
-
-  // Excessive punctuation
-  const exclamationCount = (originalText.match(/!/g) || []).length;
-  if (exclamationCount > 3) {
-    riskScore += exclamationCount * 2;
-    reasons.push('excessive punctuation detected');
-  }
-
-  // Grammar and spelling issues (simple check)
-  const grammarIssues = [
-    /\b(recieve|recieved|occured|seperate|there|their|they're)\b/gi,
-    /\b(you|u)\s+(are|r)\b/gi,
-    /\b(your|ur)\s+(going|gonna)\b/gi
-  ];
-  grammarIssues.forEach(pattern => {
-    if (pattern.test(originalText)) {
-      riskScore += 5;
-      reasons.push('poor grammar/spelling detected');
+    if (message.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+.[a-zA-Z]{2,}/g)) {
+      insights.push('Email address detected in message');
+      score += 10;
     }
-  });
 
-  // Short message with high-risk keywords
-  if (originalText.length < 100 && detectedKeywords.length > 2) {
-    riskScore += 15;
-    reasons.push('suspiciously brief message with multiple red flags');
+    if (message.split(' ').length < 10) {
+      insights.push('Unusually short message');
+      score += 5;
+    }
+
+    if (message.includes('whatsapp') || message.includes('telegram')) {
+      insights.push('Alternative communication platform mentioned');
+      score += 15;
+    }
+
+    return { score, insights };
   }
 
-  // Multiple contact methods mentioned
-  const contactMethods = ['email', 'phone', 'whatsapp', 'telegram', 'skype', 'viber'];
-  const contactCount = contactMethods.filter(method => lowerText.includes(method)).length;
-  if (contactCount > 1) {
-    riskScore += contactCount * 8;
-    reasons.push('multiple contact methods mentioned');
+  displayResults(analysis) {
+    const { riskLevel, confidence, title, description, insights } = analysis;
+
+    this.updateResult(riskLevel, this.getIconForRiskLevel(riskLevel), title, description);
+    this.showConfidenceMeter(confidence);
+    this.showInsights(insights);
+    this.hideNeuralVisualization();
+    
+    this.showNotification(`Analysis complete: ${title}`);
   }
 
-  // SOPHISTICATED THREAT LEVEL DETERMINATION
-  let result;
-
-  if (riskScore >= 100) {
-    result = {
-      status: 'danger',
-      message: '🚨 CRITICAL SCAM THREAT DETECTED',
-      note: `⚠️ EXTREME DANGER: This message contains multiple high-risk scam indicators and advanced threat patterns. This is almost certainly a scam. DO NOT ENGAGE, DO NOT CLICK LINKS, DO NOT PROVIDE ANY INFORMATION. Block sender immediately. Detected indicators: ${detectedKeywords.slice(0, 6).join(', ')}.`
+  getIconForRiskLevel(level) {
+    const icons = {
+      safe: '✅',
+      caution: '⚠️',
+      warning: '🚨',
+      danger: '🚫',
+      analyzing: '🧠',
+      error: '❌'
     };
-  } else if (riskScore >= 70) {
-    result = {
-      status: 'danger',
-      message: '🚨 HIGH-RISK SCAM DETECTED',
-      note: `⚠️ DANGER: Strong scam patterns identified with multiple threat indicators. This message exhibits characteristics typical of fraudulent communications. Extreme caution advised - likely a scam attempt. Detected: ${detectedKeywords.slice(0, 5).join(', ')}.`
-    };
-  } else if (riskScore >= 40) {
-    result = {
-      status: 'danger',
-      message: '🚨 SCAM ALERT',
-      note: `⚠️ WARNING: Significant scam indicators present. This message contains multiple suspicious elements commonly found in fraudulent communications. Do not trust this message. Detected elements: ${detectedKeywords.slice(0, 4).join(', ')}.`
-    };
-  } else if (riskScore >= 25) {
-    result = {
-      status: 'caution',
-      message: '⚠️ SUSPICIOUS CONTENT WARNING',
-      note: `🔍 CAUTION: Multiple suspicious elements detected. This message contains warning signs that require careful verification. Proceed with extreme caution and verify through official channels. Suspicious elements: ${detectedKeywords.slice(0, 3).join(', ')}.`
-    };
-  } else if (riskScore >= 10) {
-    result = {
-      status: 'caution',
-      message: '⚠️ POTENTIAL RISK DETECTED',
-      note: `🔍 Some suspicious elements identified. While not definitively a scam, this message contains elements that warrant caution. Verify sender authenticity before taking any action.`
-    };
-  } else {
-    result = {
-      status: 'safe',
-      message: '✅ MESSAGE APPEARS SECURE',
-      note: `🛡️ AI analysis complete: No significant threat indicators detected based on current scam pattern database. Message appears to be legitimate communications. However, always exercise general caution with unsolicited messages.`
-    };
+    return icons[level] || '🔍';
   }
 
-  // Add detected reasons to note
-  if (reasons.length > 0) {
-    result.note += ` Additional analysis flags: ${reasons.slice(0, 5).join(', ')}.`;
+  updateResult(level, icon, title, description) {
+    const container = document.getElementById('resultContainer');
+    const iconEl = document.getElementById('resultIcon');
+    const titleEl = document.getElementById('resultTitle');
+    const descEl = document.getElementById('resultDescription');
+
+    container.className = `result-container result-${level}`;
+    iconEl.textContent = icon;
+    titleEl.textContent = title;
+    descEl.textContent = description;
   }
 
-  return result;
-}
+  showConfidenceMeter(confidence) {
+    const meter = document.getElementById('confidenceMeter');
+    const value = document.getElementById('confidenceValue');
+    const fill = document.getElementById('confidenceFill');
 
-const messageInput = document.getElementById('messageInput');
-const resultBox = document.getElementById('resultBox');
-const resultNote = document.getElementById('resultNote');
-
-document.getElementById('analyzeBtn').addEventListener('click', function() {
-  performAnalysis();
-});
-
-document.getElementById('pasteBtn').addEventListener('click', async function() {
-  try {
-    const clipboardText = await navigator.clipboard.readText();
-    messageInput.value = clipboardText;
-    messageInput.focus();
-    showNotification('📋 Message pasted successfully!');
-  } catch (error) {
-    showNotification('🚫 Clipboard access denied. Use Ctrl+V to paste.');
-  }
-});
-
-document.getElementById('speakBtn').addEventListener('click', function() {
-  const text = resultBox.textContent + '. ' + resultNote.textContent;
-  if ('speechSynthesis' in window) {
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'en-US';
-    utterance.rate = 0.8;
-    window.speechSynthesis.speak(utterance);
-    showNotification('🔊 Reading analysis results...');
-  } else {
-    showNotification('🚫 Speech synthesis not supported.');
-  }
-});
-
-document.getElementById('clearBtn').addEventListener('click', function() {
-  messageInput.value = '';
-  resultBox.textContent = '🟢 SYSTEM READY';
-  resultBox.className = 'result-box result-safe';
-  resultNote.textContent = 'AI systems standing by for threat analysis...';
-  messageInput.focus();
-  showNotification('🗑️ Interface cleared.');
-});
-
-function performAnalysis() {
-  const text = messageInput.value.trim();
-
-  if (!text) {
-    resultBox.textContent = '⚠️ INPUT REQUIRED';
-    resultBox.className = 'result-box result-caution';
-    resultNote.textContent = 'Please enter a message for comprehensive AI threat analysis.';
-    showNotification('⚠️ No message provided for analysis.');
-    return;
+    meter.style.display = 'block';
+    value.textContent = `${confidence}%`;
+    
+    setTimeout(() => {
+      fill.style.width = `${confidence}%`;
+    }, 300);
   }
 
-  resultBox.textContent = '🔄 AI ANALYZING...';
-  resultBox.className = 'result-box result-caution';
-  resultNote.textContent = 'Advanced AI neural networks processing comprehensive threat patterns and analyzing message structure...';
+  showInsights(insights) {
+    const container = document.getElementById('aiInsights');
+    const list = document.getElementById('insightsList');
 
-  setTimeout(function() {
-    const analysis = analyzeMessage(text);
-    resultBox.textContent = analysis.message;
-    resultBox.className = 'result-box result-' + analysis.status;
-    resultNote.textContent = analysis.note;
+    if (insights.length === 0) {
+      container.style.display = 'none';
+      return;
+    }
 
-    if (analysis.status === 'danger') {
-      triggerDangerAlert();
-      showNotification('🚨 CRITICAL THREAT DETECTED!');
-    } else if (analysis.status === 'caution') {
-      showNotification('⚠️ Suspicious content detected.');
+    list.innerHTML = '';
+    insights.forEach(insight => {
+      const li = document.createElement('li');
+      li.className = 'insights-item';
+      li.innerHTML = `<span>•</span><span>${insight}</span>`;
+      list.appendChild(li);
+    });
+
+    container.style.display = 'block';
+  }
+
+  showNeuralVisualization() {
+    const viz = document.getElementById('neuralViz');
+    const network = document.getElementById('neuralNetwork');
+    
+    viz.style.display = 'flex';
+    network.innerHTML = '';
+
+    for (let i = 0; i < 20; i++) {
+      const node = document.createElement('div');
+      node.className = 'neural-node';
+      node.style.left = Math.random() * 90 + '%';
+      node.style.top = Math.random() * 90 + '%';
+      node.style.animationDelay = Math.random() * 2 + 's';
+      network.appendChild(node);
+    }
+  }
+
+  hideNeuralVisualization() {
+    setTimeout(() => {
+      document.getElementById('neuralViz').style.display = 'none';
+    }, 1000);
+  }
+
+  async pasteFromClipboard() {
+    try {
+      const text = await navigator.clipboard.readText();
+      document.getElementById('messageInput').value = text;
+      this.showNotification('📋 Text pasted successfully');
+    } catch (error) {
+      this.showNotification('❌ Unable to access clipboard. Use Ctrl+V to paste.');
+    }
+  }
+
+  speakResult() {
+    const title = document.getElementById('resultTitle').textContent;
+    const description = document.getElementById('resultDescription').textContent;
+    const text = `${title}. ${description}`;
+
+    if ('speechSynthesis' in window) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'en-US';
+      utterance.rate = 0.8;
+      speechSynthesis.speak(utterance);
+      this.showNotification('🔊 Reading analysis results');
     } else {
-      showNotification('✅ Analysis complete. Message appears safe.');
+      this.showNotification('❌ Speech synthesis not supported');
     }
-  }, 2500);
+  }
+
+  clearInput() {
+    document.getElementById('messageInput').value = '';
+    this.updateResult('safe', '🛡️', 'AI System Ready', 'Advanced neural networks are standing by for message analysis');
+    document.getElementById('confidenceMeter').style.display = 'none';
+    document.getElementById('aiInsights').style.display = 'none';
+    this.hideNeuralVisualization();
+    this.showNotification('🗑️ Input cleared');
+  }
+
+  showNotification(message) {
+    const notification = document.createElement('div');
+    notification.className = 'notification';
+    notification.textContent = message;
+    document.body.appendChild(notification);
+
+    setTimeout(() => notification.classList.add('show'), 100);
+    setTimeout(() => {
+      notification.classList.remove('show');
+      setTimeout(() => document.body.removeChild(notification), 300);
+    }, 3000);
+  }
 }
 
-function triggerDangerAlert() {
-  document.body.style.backgroundColor = '#220000';
-  setTimeout(function() {
-    document.body.style.backgroundColor = '';
-  }, 300);
+document.addEventListener('DOMContentLoaded', () => {
+  new AIScamDetector();
+});
 
-  const lights = document.querySelectorAll('.light');
-  lights.forEach(function(light, index) {
-    setTimeout(function() {
-      light.style.backgroundColor = '#ff0000';
-      light.style.boxShadow = '0 0 20px #ff0000';
-      setTimeout(function() {
-        light.style.backgroundColor = '';
-        light.style.boxShadow = '';
-      }, 400);
-    }, index * 30);
-  });
-}
-
-function showNotification(message) {
-  const notification = document.createElement('div');
-  notification.style.cssText = `
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    padding: 1rem 2rem;
-    background: rgba(0, 17, 34, 0.95);
-    border: 2px solid #00ffe0;
-    border-radius: 10px;
-    color: #00ffe0;
-    font-family: 'Orbitron', monospace;
-    font-weight: 700;
-    font-size: 0.9rem;
-    z-index: 10000;
-    max-width: 350px;
-    box-shadow: 0 0 20px #00ffe055;
-    backdrop-filter: blur(10px);
-    opacity: 0;
-    transform: translateX(400px);
-    transition: all 0.5s ease;
-  `;
-  notification.textContent = message;
-
-  document.body.appendChild(notification);
-
-  setTimeout(function() {
-    notification.style.opacity = '1';
-    notification.style.transform = 'translateX(0)';
-  }, 100);
-
-  setTimeout(function() {
-    notification.style.opacity = '0';
-    notification.style.transform = 'translateX(400px)';
-    setTimeout(function() {
-      notification.remove();
-    }, 500);
-  }, 3500);
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-  createCyberLights();
+window.addEventListener('resize', () => {
+  const container = document.getElementById('particleContainer');
+  if (container.children.length !== (window.innerWidth < 768 ? 15 : 30)) {
+    container.innerHTML = '';
+    setTimeout(() => new AIScamDetector().createParticles(), 100);
+  }
 });
 </script>
+
 </body>
 </html>
