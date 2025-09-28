@@ -8,7 +8,12 @@
 <script src="https://js.puter.com/v2/"></script>
 <style>
 * {margin:0;padding:0;box-sizing:border-box;}
-body {font-family:'Orbitron',monospace;background:#000;color:#00ff00;min-height:100vh;overflow-x:hidden;}
+body {font-family:'Orbitron',monospace;background:#000;color:#00ff00;min-height:100vh;overflow-x:hidden;position:relative;}
+.loading-spinner {position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:50px;height:50px;border:3px solid #00ff0022;border-top:3px solid #00ff00;border-radius:50%;animation:spin 1s linear infinite;display:none;z-index:1000;}
+@keyframes spin {0%{transform:translate(-50%,-50%) rotate(0deg);}100%{transform:translate(-50%,-50%) rotate(360deg);}}
+.processing-overlay {position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.8);display:none;z-index:999;justify-content:center;align-items:center;flex-direction:column;}
+.processing-text {color:#00ff00;font-size:1.2rem;margin-top:20px;animation:pulse 2s ease-in-out infinite;}
+@keyframes pulse {0%,100%{opacity:0.6;}50%{opacity:1;}}
 .matrix-bg {position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:0;background:radial-gradient(circle at 50% 50%,#001100 0%,#000500 70%,#000000 100%);}
 .cyber-grid {position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:1;background-image:linear-gradient(rgba(0,255,0,0.08) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,0,0.08) 1px,transparent 1px);background-size:30px 30px;animation:fastGrid 3s linear infinite;}
 @keyframes fastGrid {0%{transform:translate(0,0);}100%{transform:translate(30px,30px);}}
@@ -26,10 +31,44 @@ body {font-family:'Orbitron',monospace;background:#000;color:#00ff00;min-height:
 .security-guard-2::before {content:'🕵️‍♂️';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:28px;}
 @keyframes guardPatrol1 {0%{left:-100px;}25%{left:20vw;}50%{left:50vw;}75%{left:80vw;}100%{left:100vw;}}
 @keyframes guardPatrol2 {0%{right:-100px;}25%{right:25vw;}50%{right:50vw;}75%{right:75vw;}100%{right:100vw;}}
-.black-cat {position:fixed;bottom:5px;left:-80px;width:50px;height:30px;z-index:4;animation:catWalk 20s linear infinite;}
-.black-cat::before {content:'🐈‍⬛';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:24px;animation:catBob 0.5s ease-in-out infinite alternate;}
-@keyframes catWalk {0%{left:-80px;}100%{left:100vw;}}
-@keyframes catBob {0%{transform:translate(-50%,-50%) translateY(0px);}100%{transform:translate(-50%,-50%) translateY(-3px);}}
+.police-car {position:fixed;bottom:120px;left:-120px;width:80px;height:50px;z-index:4;background:#222;border-radius:15px;animation:carPatrol 25s linear infinite;}
+.police-car::before {content:'🚔';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:32px;}
+.police-car::after {content:'';position:absolute;top:-5px;left:20px;width:6px;height:6px;border-radius:50%;background:#ff0000;box-shadow:0 0 10px #ff0000,15px 0 0 0 #0000ff,15px 0 10px 0 #0000ff;animation:carLights 0.5s linear infinite;}
+@keyframes carPatrol {0%{left:-120px;}20%{left:15vw;}40%{left:35vw;}60%{left:55vw;}80%{left:75vw;}100%{left:100vw;}}
+@keyframes carLights {0%{opacity:1;}50%{opacity:0.3;}100%{opacity:1;}}
+.sparkle-particles {position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:2;pointer-events:none;}
+.sparkle {position:absolute;width:3px;height:3px;background:#ffffff;border-radius:50%;animation:sparkleFloat 4s linear infinite;}
+.sparkle:nth-child(1){left:10%;top:20%;animation-delay:0s;background:#ff0000;}
+.sparkle:nth-child(2){left:30%;top:40%;animation-delay:0.5s;background:#00ff00;}
+.sparkle:nth-child(3){left:50%;top:60%;animation-delay:1s;background:#0000ff;}
+.sparkle:nth-child(4){left:70%;top:30%;animation-delay:1.5s;background:#ffff00;}
+.sparkle:nth-child(5){left:90%;top:50%;animation-delay:2s;background:#ff00ff;}
+.sparkle:nth-child(6){left:20%;top:70%;animation-delay:2.5s;background:#00ffff;}
+.sparkle:nth-child(7){left:60%;top:10%;animation-delay:3s;background:#ffffff;}
+.sparkle:nth-child(8){left:40%;top:80%;animation-delay:3.5s;background:#ffa500;}
+@keyframes sparkleFloat {0%{opacity:0;transform:scale(0.5) rotate(0deg);}25%{opacity:1;transform:scale(1.5) rotate(90deg);}50%{opacity:1;transform:scale(2) rotate(180deg);}75%{opacity:1;transform:scale(1.5) rotate(270deg);}100%{opacity:0;transform:scale(0.5) rotate(360deg);}}
+.moving-particles {position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:2;pointer-events:none;}
+.particle {position:absolute;width:2px;height:2px;background:#00ff00;border-radius:50%;animation:particleMove 6s linear infinite;}
+.particle:nth-child(1){left:5%;animation-delay:0s;animation:particleMove1 3s linear infinite;}
+.particle:nth-child(2){left:15%;animation-delay:0.5s;animation:particleMove2 3.5s linear infinite;}
+.particle:nth-child(3){left:25%;animation-delay:1s;animation:particleMove3 4s linear infinite;}
+.particle:nth-child(4){left:35%;animation-delay:1.5s;animation:particleMove4 4.5s linear infinite;}
+.particle:nth-child(5){left:45%;animation-delay:2s;animation:particleMove5 3.2s linear infinite;}
+.particle:nth-child(6){left:55%;animation-delay:2.5s;animation:particleMove6 3.8s linear infinite;}
+.particle:nth-child(7){left:65%;animation-delay:3s;animation:particleMove7 4.2s linear infinite;}
+.particle:nth-child(8){left:75%;animation-delay:3.5s;animation:particleMove8 3.6s linear infinite;}
+.particle:nth-child(9){left:85%;animation-delay:4s;animation:particleMove9 4.8s linear infinite;}
+.particle:nth-child(10){left:95%;animation-delay:4.5s;animation:particleMove10 3.4s linear infinite;}
+@keyframes particleMove1 {0%{top:100vh;opacity:0;}10%{opacity:1;}90%{opacity:1;}100%{top:-10px;opacity:0;}}
+@keyframes particleMove2 {0%{top:100vh;opacity:0;}10%{opacity:1;}90%{opacity:1;}100%{top:-10px;opacity:0;}}
+@keyframes particleMove3 {0%{top:100vh;opacity:0;}10%{opacity:1;}90%{opacity:1;}100%{top:-10px;opacity:0;}}
+@keyframes particleMove4 {0%{top:100vh;opacity:0;}10%{opacity:1;}90%{opacity:1;}100%{top:-10px;opacity:0;}}
+@keyframes particleMove5 {0%{top:100vh;opacity:0;}10%{opacity:1;}90%{opacity:1;}100%{top:-10px;opacity:0;}}
+@keyframes particleMove6 {0%{top:100vh;opacity:0;}10%{opacity:1;}90%{opacity:1;}100%{top:-10px;opacity:0;}}
+@keyframes particleMove7 {0%{top:100vh;opacity:0;}10%{opacity:1;}90%{opacity:1;}100%{top:-10px;opacity:0;}}
+@keyframes particleMove8 {0%{top:100vh;opacity:0;}10%{opacity:1;}90%{opacity:1;}100%{top:-10px;opacity:0;}}
+@keyframes particleMove9 {0%{top:100vh;opacity:0;}10%{opacity:1;}90%{opacity:1;}100%{top:-10px;opacity:0;}}
+@keyframes particleMove10 {0%{top:100vh;opacity:0;}10%{opacity:1;}90%{opacity:1;}100%{top:-10px;opacity:0;}}
 .comet-lights {position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:2;pointer-events:none;}
 .comet {position:absolute;width:6px;height:6px;border-radius:50%;animation:cometMove 2s linear infinite;}
 .comet:nth-child(1){background:#ff0000;top:10%;left:0;animation:cometMove1 1.5s linear infinite;}
@@ -48,6 +87,9 @@ body {font-family:'Orbitron',monospace;background:#000;color:#00ff00;min-height:
 @keyframes cometMove6 {0%{left:-10px;opacity:0;}10%{opacity:1;box-shadow:0 0 15px #00ffff;}90%{opacity:1;box-shadow:0 0 25px #00ffff;}100%{left:100vw;opacity:0;}}
 @keyframes cometMove7 {0%{left:-10px;opacity:0;}10%{opacity:1;box-shadow:0 0 15px #ffffff;}90%{opacity:1;box-shadow:0 0 25px #ffffff;}100%{left:100vw;opacity:0;}}
 @keyframes cometMove8 {0%{left:-10px;opacity:0;}10%{opacity:1;box-shadow:0 0 15px #ffa500;}90%{opacity:1;box-shadow:0 0 25px #ffa500;}100%{left:100vw;opacity:0;}}
+.side-neon-left {position:fixed;top:0;left:0;width:5px;height:100vh;z-index:3;background:linear-gradient(180deg,#ff0000 0%,#00ff00 25%,#0000ff 50%,#ffff00 75%,#ff00ff 100%);animation:neonPulse 2s ease-in-out infinite alternate;}
+.side-neon-right {position:fixed;top:0;right:0;width:5px;height:100vh;z-index:3;background:linear-gradient(180deg,#ff00ff 0%,#ffff00 25%,#0000ff 50%,#00ff00 75%,#ff0000 100%);animation:neonPulse 2s ease-in-out infinite alternate;}
+@keyframes neonPulse {0%{opacity:0.5;box-shadow:0 0 10px currentColor;}100%{opacity:1;box-shadow:0 0 20px currentColor;}}
 .radar-sweep {position:fixed;top:15px;left:15px;width:60px;height:60px;z-index:2;border:2px solid #00ff0055;border-radius:50%;background:radial-gradient(circle,#00ff0011 0%,#00ff0033 50%,#00ff0000 70%);}
 .radar-sweep::before {content:'';position:absolute;top:50%;left:50%;width:50%;height:2px;background:linear-gradient(90deg,#00ff00 0%,#00ff0000 100%);transform-origin:0 50%;animation:radarSpin 2s linear infinite;}
 @keyframes radarSpin {0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
@@ -97,19 +139,27 @@ body {font-family:'Orbitron',monospace;background:#000;color:#00ff00;min-height:
 .insights-list {list-style:none;color:#00aa00;font-size:0.75rem;}
 .insights-item {margin-bottom:3px;padding-left:10px;position:relative;}
 .insights-item::before {content:'🧠';position:absolute;left:0;font-size:0.8rem;}
-.footer {text-align:center;padding:25px 10px;background:linear-gradient(135deg,#00110022 0%,#00220011 100%);border:1px solid #00ff0033;border-radius:15px;margin:30px auto 10px auto;max-width:480px;box-shadow:0 0 20px #00ff0033;}
-.developer-info {color:#00ff00;font-size:1rem;font-weight:700;margin-bottom:8px;letter-spacing:1px;animation:devGlow 3s ease-in-out infinite alternate;}
-@keyframes devGlow {0%{text-shadow:0 0 10px #00ff00;}100%{text-shadow:0 0 20px #00ff00,0 0 30px #00ff0066;}}
-.contact-info {color:#00aa00;font-size:0.8rem;margin-bottom:12px;}
-.disclaimer {color:#00aa0088;font-size:0.65rem;line-height:1.3;max-width:400px;margin:0 auto;border-top:1px solid #00ff0022;padding-top:12px;}
+.footer {text-align:center;padding:30px 15px;background:linear-gradient(135deg,#00110033 0%,#00220022 100%);border:2px solid #00ff0066;border-radius:20px;margin:40px auto 20px auto;max-width:500px;box-shadow:0 0 30px #00ff0044;position:relative;z-index:15;}
+.developer-info {color:#00ff00;font-size:1.2rem;font-weight:900;margin-bottom:12px;letter-spacing:2px;animation:devGlow 3s ease-in-out infinite alternate;text-shadow:0 0 15px #00ff00;}
+@keyframes devGlow {0%{text-shadow:0 0 15px #00ff00;}100%{text-shadow:0 0 25px #00ff00,0 0 35px #00ff0066;}}
+.contact-info {color:#00ff00;font-size:1rem;margin-bottom:15px;font-weight:700;animation:contactPulse 4s ease-in-out infinite alternate;}
+@keyframes contactPulse {0%{opacity:0.8;}100%{opacity:1;}}
+.disclaimer {color:#00aa00;font-size:0.75rem;line-height:1.4;max-width:450px;margin:0 auto;border-top:2px solid #00ff0033;padding-top:15px;font-weight:600;}
 .notification {position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:10000;background:linear-gradient(135deg,#001100 0%,#003300 100%);border:1px solid #00ff00;border-radius:6px;padding:8px 12px;color:#00ff00;font-weight:700;box-shadow:0 0 15px #00ff0055;opacity:0;transition:all 0.3s ease;font-size:0.75rem;}
 .notification.show {opacity:1;}
-@media (max-width:500px) {.logo{font-size:1.6rem;}.main-panel{padding:15px;margin:0 10px 25px 10px;}.button-grid{grid-template-columns:1fr;}.police-light-1,.police-light-2,.police-light-3,.police-light-4{width:30px;height:30px;}}
+@media (max-width:500px) {.logo{font-size:1.6rem;}.main-panel{padding:15px;margin:0 10px 25px 10px;}.button-grid{grid-template-columns:1fr;}.police-light-1,.police-light-2,.police-light-3,.police-light-4{width:30px;height:30px;}.footer{margin:30px 10px 15px 10px;padding:20px 10px;}.developer-info{font-size:1rem;}.contact-info{font-size:0.9rem;}}
 </style>
 </head>
 <body>
+<div class="loading-spinner" id="loadingSpinner"></div>
+<div class="processing-overlay" id="processingOverlay">
+<div class="loading-spinner"></div>
+<div class="processing-text">AI PROCESSING...</div>
+</div>
 <div class="matrix-bg"></div>
 <div class="cyber-grid"></div>
+<div class="side-neon-left"></div>
+<div class="side-neon-right"></div>
 <div class="police-light-1"></div>
 <div class="police-light-2"></div>
 <div class="police-light-3"></div>
@@ -117,7 +167,29 @@ body {font-family:'Orbitron',monospace;background:#000;color:#00ff00;min-height:
 <div class="radar-sweep"></div>
 <div class="security-guard-1"></div>
 <div class="security-guard-2"></div>
-<div class="black-cat"></div>
+<div class="police-car"></div>
+<div class="sparkle-particles">
+<div class="sparkle"></div>
+<div class="sparkle"></div>
+<div class="sparkle"></div>
+<div class="sparkle"></div>
+<div class="sparkle"></div>
+<div class="sparkle"></div>
+<div class="sparkle"></div>
+<div class="sparkle"></div>
+</div>
+<div class="moving-particles">
+<div class="particle"></div>
+<div class="particle"></div>
+<div class="particle"></div>
+<div class="particle"></div>
+<div class="particle"></div>
+<div class="particle"></div>
+<div class="particle"></div>
+<div class="particle"></div>
+<div class="particle"></div>
+<div class="particle"></div>
+</div>
 <div class="comet-lights">
 <div class="comet"></div>
 <div class="comet"></div>
@@ -152,7 +224,7 @@ body {font-family:'Orbitron',monospace;background:#000;color:#00ff00;min-height:
 <div class="button-grid">
 <button id="analyzeBtn" class="cyber-btn">🔍 ANALYZE</button>
 <button id="pasteBtn" class="cyber-btn">📋 PASTE</button>
-<button id="speakBtn" class="cyber-btn">🔊 AUDIO</button>
+<button id="readBtn" class="cyber-btn">📢 READ OUT</button>
 <button id="clearBtn" class="cyber-btn">🗑️ CLEAR</button>
 </div>
 <div class="result-panel safe" id="resultPanel">
@@ -170,98 +242,115 @@ body {font-family:'Orbitron',monospace;background:#000;color:#00ff00;min-height:
 <div class="developer-info">DEVELOPED BY NIDHIN R</div>
 <div class="contact-info">📧 r.nidhinofficial@gmail.com</div>
 <div class="disclaimer">
-<strong>⚠️ DISCLAIMER:</strong> Nidhin R will not be responsible for any errors or discrepancies in AI generated output. Users should verify results independently and use their own judgment when evaluating potentially fraudulent content.
+<strong>⚠️ DISCLAIMER:</strong> Nidhin R will not be responsible for any errors or discrepancies in AI generated output. Users should verify results independently and use their own judgment when evaluating potentially fraudulent content. This tool is for informational purposes only.
 </div>
 </footer>
 <script>
 function showNotification(message) {
-const notification = document.createElement('div');
+var notification = document.createElement('div');
 notification.className = 'notification';
 notification.textContent = message;
 document.body.appendChild(notification);
-setTimeout(() => notification.classList.add('show'), 100);
-setTimeout(() => {
+setTimeout(function() {
+notification.classList.add('show');
+}, 100);
+setTimeout(function() {
 notification.classList.remove('show');
-setTimeout(() => {
+setTimeout(function() {
 if (document.body.contains(notification)) {
 document.body.removeChild(notification);
 }
 }, 300);
 }, 3000);
 }
+
+function showProcessing() {
+document.getElementById('processingOverlay').style.display = 'flex';
+}
+
+function hideProcessing() {
+document.getElementById('processingOverlay').style.display = 'none';
+}
+
 function updateResult(icon, title, description, confidence, insights, riskLevel) {
-const panel = document.getElementById('resultPanel');
-const iconEl = document.getElementById('resultIcon');
-const titleEl = document.getElementById('resultTitle');
-const descEl = document.getElementById('resultDescription');
-const fillEl = document.getElementById('confidenceFill');
+var panel = document.getElementById('resultPanel');
+var iconEl = document.getElementById('resultIcon');
+var titleEl = document.getElementById('resultTitle');
+var descEl = document.getElementById('resultDescription');
+var fillEl = document.getElementById('confidenceFill');
+
 panel.className = 'result-panel ' + (riskLevel || 'safe');
 iconEl.textContent = icon;
 iconEl.className = 'result-icon ' + (riskLevel || 'safe');
 titleEl.textContent = title;
 descEl.textContent = description;
 fillEl.style.width = (confidence || 0) + '%';
-const insightsPanel = document.getElementById('insightsPanel');
-const insightsList = document.getElementById('insightsList');
+
+var insightsPanel = document.getElementById('insightsPanel');
+var insightsList = document.getElementById('insightsList');
+
 if (insights && insights.length > 0) {
 insightsPanel.style.display = 'block';
 insightsList.innerHTML = '';
-insights.forEach(insight => {
-const li = document.createElement('li');
+for (var i = 0; i < insights.length; i++) {
+var li = document.createElement('li');
 li.className = 'insights-item';
-li.textContent = insight;
+li.textContent = insights[i];
 insightsList.appendChild(li);
-});
+}
 } else {
 insightsPanel.style.display = 'none';
 }
 }
+
 document.getElementById('analyzeBtn').addEventListener('click', function() {
-const message = document.getElementById('messageInput').value.trim();
+var message = document.getElementById('messageInput').value.trim();
 if (!message) {
 showNotification('⚠️ INPUT REQUIRED');
 return;
 }
+
+showProcessing();
 updateResult('🔄', 'ANALYZING...', 'AI processing your message...', 0, [], 'safe');
 showNotification('🤖 AI ANALYSIS STARTED');
-const prompt = 'Analyze this message for scams, fraud, or phishing. Respond in this exact format:
-RISK: [SAFE/CAUTION/WARNING/DANGER]
-CONFIDENCE: [0-100]%
-REASON: [brief explanation why it is safe or suspicious]
-INSIGHTS: [specific red flag 1] | [specific red flag 2] | [specific red flag 3]
 
-Message to analyze: "' + message + '"';
+var prompt = 'Analyze this message for scams, fraud, or phishing. Respond in this exact format: RISK: [SAFE/CAUTION/WARNING/DANGER] CONFIDENCE: [0-100]% REASON: [brief explanation why it is safe or suspicious] INSIGHTS: [specific red flag 1] | [specific red flag 2] | [specific red flag 3]. Message to analyze: "' + message + '"';
+
 puter.ai.chat(prompt, { model: 'gpt-5-nano' }).then(function(result) {
-const lines = result.split('
+hideProcessing();
+var lines = result.split('
 ');
-let riskLevel = 'CAUTION';
-let confidence = 75;
-let reason = 'Analysis completed';
-let insights = ['AI analysis performed'];
-lines.forEach(line => {
-if (line.startsWith('RISK:')) {
+var riskLevel = 'CAUTION';
+var confidence = 75;
+var reason = 'Analysis completed';
+var insights = ['AI analysis performed'];
+
+for (var i = 0; i < lines.length; i++) {
+var line = lines[i];
+if (line.indexOf('RISK:') === 0) {
 riskLevel = line.replace('RISK:', '').trim();
-} else if (line.startsWith('CONFIDENCE:')) {
+} else if (line.indexOf('CONFIDENCE:') === 0) {
 confidence = parseInt(line.replace('CONFIDENCE:', '').replace('%', '').trim()) || 75;
-} else if (line.startsWith('REASON:')) {
+} else if (line.indexOf('REASON:') === 0) {
 reason = line.replace('REASON:', '').trim();
-} else if (line.startsWith('INSIGHTS:')) {
-const insightText = line.replace('INSIGHTS:', '').trim();
-insights = insightText.split('|').map(i => i.trim()).filter(i => i.length > 0);
+} else if (line.indexOf('INSIGHTS:') === 0) {
+var insightText = line.replace('INSIGHTS:', '').trim();
+insights = insightText.split('|').map(function(i) { return i.trim(); }).filter(function(i) { return i.length > 0; });
 }
-});
-let icon, title, riskClass;
-if (riskLevel.toUpperCase().includes('DANGER')) {
+}
+
+var icon, title, riskClass;
+if (riskLevel.toUpperCase().indexOf('DANGER') !== -1) {
 icon = '🚨';
 title = 'HIGH THREAT DETECTED';
 riskClass = 'danger';
 showNotification('🚨 HIGH RISK DETECTED!');
-} else if (riskLevel.toUpperCase().includes('WARNING')) {
+} else if (riskLevel.toUpperCase().indexOf('WARNING') !== -1) {
 icon = '⚠️';
 title = 'SUSPICIOUS CONTENT';
 riskClass = 'warning';
 showNotification('⚠️ SUSPICIOUS PATTERNS');
-} else if (riskLevel.toUpperCase().includes('CAUTION')) {
+} else if (riskLevel.toUpperCase().indexOf('CAUTION') !== -1) {
 icon = '⚡';
 title = 'POTENTIAL RISK';
 riskClass = 'warning';
@@ -272,13 +361,11 @@ title = 'LIKELY SAFE';
 riskClass = 'safe';
 showNotification('✅ MESSAGE APPEARS SAFE');
 }
+
 updateResult(icon, title, reason, confidence, insights, riskClass);
-}).catch(function(error) {
-console.error('AI Analysis Error:', error);
-updateResult('❌', 'ANALYSIS ERROR', 'Failed to analyze message. Please check your connection and try again.', 0, ['AI service temporarily unavailable'], 'danger');
-showNotification('❌ ANALYSIS FAILED');
 });
 });
+
 document.getElementById('pasteBtn').addEventListener('click', function() {
 if (navigator.clipboard && navigator.clipboard.readText) {
 navigator.clipboard.readText().then(function(text) {
@@ -291,21 +378,25 @@ showNotification('❌ CLIPBOARD ACCESS DENIED');
 showNotification('❌ CLIPBOARD NOT SUPPORTED');
 }
 });
-document.getElementById('speakBtn').addEventListener('click', function() {
-const title = document.getElementById('resultTitle').textContent;
-const description = document.getElementById('resultDescription').textContent;
-const text = title + '. ' + description;
-if ('speechSynthesis' in window) {
+
+document.getElementById('readBtn').addEventListener('click', function() {
+var title = document.getElementById('resultTitle').textContent;
+var description = document.getElementById('resultDescription').textContent;
+var text = 'Analysis Result: ' + title + '. ' + description;
+
+if (window.speechSynthesis) {
 window.speechSynthesis.cancel();
-const utterance = new SpeechSynthesisUtterance(text);
-utterance.rate = 0.8;
+var utterance = new SpeechSynthesisUtterance(text);
+utterance.rate = 0.9;
 utterance.lang = 'en-US';
+utterance.pitch = 1.2;
 window.speechSynthesis.speak(utterance);
-showNotification('🔊 AUDIO OUTPUT ACTIVE');
+showNotification('📢 READING OUT RESULTS');
 } else {
-showNotification('❌ AUDIO NOT SUPPORTED');
+showNotification('❌ SPEECH NOT SUPPORTED');
 }
 });
+
 document.getElementById('clearBtn').addEventListener('click', function() {
 document.getElementById('messageInput').value = '';
 updateResult('🛡️', 'SYSTEM READY', 'Input message above and click ANALYZE for comprehensive AI-powered threat assessment', 0, [], 'safe');
