@@ -1,25 +1,18 @@
-# 🔬 AI-Based Scam Message Detector
+AI Based Scam Detection Engine 🚀
 
-> **An advanced cyberpunk-styled AI threat analysis terminal built by Nidhin R**
+​This project started with a question: how smart can a threat detector be if it's built entirely in the browser with pure JavaScript? My goal was to create a tool that thinks more like a security analyst than a simple keyword filter, and this powerful engine is the result.
 
-### 🤖 Advanced AI Analysis
-- **Neural Network Processing**: Analyzes messages using advanced pattern recognition
-- **Multi-Layer Threat Detection**: Scans for 25+ scam indicators and suspicious patterns
-- **Real-Time Confidence Scoring**: Dynamic threat assessment with percentage confidence
-- **Intelligent Pattern Matching**: Detects URLs, phone numbers, urgency tactics, and financial requests
+​Here's what makes it different:
 
-### Advanced Pattern Recognition:
-- 🔍 **URL Analysis**: Detects suspicious external links
-- 📞 **Phone Number Detection**: Identifies phone numbers in messages
-- 💰 **Financial Pattern Matching**: Recognizes money amounts and currency
-- ⚠️ **Urgency Scoring**: Calculates urgency level based on word frequency
-- 🎯 **Contextual Analysis**: Examines word combinations and sentencesp
+​🧠 It Thinks Contextually: Instead of just flagging words, the engine understands that certain combinations are far more dangerous. A demand for gift cards is suspicious, but a demand for gift cards plus urgent threats is a critical alert. The system's risk score multiplies based on these correlated threats.
 
-## Technical Details
+​🚨 Deep Threat Analysis: It scans for dozens of patterns across different scamming techniques—from impersonation and psychological pressure to financial fraud and social engineering tactics.
 
-### Built With
-- **HTML5**: Semantic markup and structure
-- **CSS3**: Advanced animations and cyberpunk styling
-- **Vanilla JavaScript**: Core functionality and AI logic
-- **Orbitron Font**: Futuristic typography from Google Fonts
+​📊 Clear, Actionable Results: You don't just get a generic score. You get a clear verdict—Critical, Elevated, Guarded, or Low—and a simple breakdown of exactly what was flagged, so you understand the nature of the threat.
 
+​🎨 Engaging UI/UX: I designed a custom, cyberpunk-inspired interface with pure CSS to make the experience of analyzing threats fast, responsive, and honestly, pretty cool to look at.
+
+​Tech Stack 🛠️
+
+​Code: HTML5, CSS3 (Advanced Animations), JavaScript (ES6+)
+​Approach: This project is 100% Vanilla JS. No frameworks or libraries were used for the core detection logic, focusing on pure algorithmic performance.
