@@ -1,1116 +1,364 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AI Scam Detector by Nidhin R</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>AI Scam Detector</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<script src="https://js.puter.com/v2/"></script>
 <style>
 :root {
-  --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-  --warning-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-  --danger-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-  --glass-bg: rgba(255, 255, 255, 0.08);
-  --glass-border: rgba(255, 255, 255, 0.18);
-  --text-primary: #ffffff;
-  --text-secondary: #a0aec0;
-  --shadow-glass: 0 8px 32px rgba(31, 38, 135, 0.37);
-  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+ --primary-gradient:linear-gradient(120deg,#637bff 0%,#392ae7 100%);
+ --secondary-gradient:linear-gradient(120deg,#fa709a 0%,#fee140 100%);
+ --success-gradient:linear-gradient(120deg,#43e97b 0%,#38f9d7 100%);
+ --glass-bg:rgba(255,255,255,0.10);
+ --glass-border:rgba(255,255,255,0.16);
+ --shadow-glass:0 8px 40px 0 rgba(60,100,255,0.16);
+ --primary-txt:#f7fafc;
+ --secondary-txt:#a0aec0;
+ --transition:all 0.4s cubic-bezier(.55,.03,.73,.99);
 }
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
 body {
-  font-family: 'Inter', sans-serif;
-  background: radial-gradient(ellipse at top, #1a1b3a 0%, #0f0f23 50%, #000000 100%);
-  color: var(--text-primary);
-  min-height: 100vh;
-  overflow-x: hidden;
-  position: relative;
+ font-family:'Inter',sans-serif;background-color:#0c1024;
+ color:var(--primary-txt);min-height:100svh;
+ margin:0;letter-spacing:.02em;overflow-x:hidden;transition:background 0.5s;
+ position:relative;
 }
-
-.particle-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 1;
-  pointer-events: none;
+.bubbles-bg {
+ position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:0;
+ overflow:hidden;pointer-events:none;
 }
-
-.particle {
-  position: absolute;
-  background: rgba(102, 126, 234, 0.6);
-  border-radius: 50%;
-  pointer-events: none;
-  animation: float 6s ease-in-out infinite;
+.bubble {
+ position:absolute;
+ border-radius:50%;opacity:.36;
+ animation:bubbleRise 15s linear infinite;
+ box-shadow:0 0 24px 5px #fff5,0 0 60px #fff3;
+ background:radial-gradient(circle,#fff 0%,#a8e1f8bb 40%,#88b7ff11 85%);
+ pointer-events:none;
 }
-
-@keyframes float {
-  0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.7; }
-  50% { transform: translateY(-20px) rotate(180deg); opacity: 1; }
+@keyframes bubbleRise {
+ 0%{transform:translateY(100vh) scale(.8);opacity:.4;}
+ 70%{opacity:.99;}
+ 100%{transform:translateY(-16vh) scale(1.17);opacity:.03;}
 }
-
-.loading-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: radial-gradient(ellipse at center, #1a1b3a 0%, #0f0f23 50%, #000000 100%);
-  z-index: 9999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 1;
-  transition: opacity 1s ease;
+.wave {
+ position:absolute;top:0;left:0;width:100vw;height:260px;z-index:2;
+ pointer-events:none;mix-blend-mode:screen;
 }
-
-.loading-content {
-  text-align: center;
-  max-width: 400px;
-  padding: 2rem;
+@media (max-width:600px){.wave{height:110px;}}
+.blinker {
+ display:inline-block;margin-left:.17em;width:.72em;height:.72em;border-radius:50%;
+ background:linear-gradient(120deg,#fa709a,#fee140 70%);
+ box-shadow:0 0 12px 4px #fee14090,inset 0 1px 4px #fff7;
+ animation:blink 1.1s linear infinite alternate;
 }
-
-.loading-spinner {
-  width: 80px;
-  height: 80px;
-  margin: 0 auto 2rem;
-  position: relative;
+@keyframes blink {
+ 10%,90%{filter:brightness(1.35);}
+ 50%{filter:brightness(2.7);}
 }
-
-.spinner-ring {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  border: 3px solid transparent;
-  border-radius: 50%;
-  animation: spin 2s linear infinite;
+.blink-2 {background:linear-gradient(120deg,#637bff,#41d2ff);animation-delay:.3s;}
+.blink-3 {background:linear-gradient(120deg,#67e6f8,#fa709a);animation-delay:.6s;}
+.glow {
+ box-shadow:0 0 28px #637bffde,0 0 120px #392ae733;
 }
-
-.ring-1 { border-top: 3px solid #667eea; animation-duration: 2s; }
-.ring-2 { border-right: 3px solid #764ba2; animation-duration: 1.5s; animation-direction: reverse; }
-.ring-3 { border-bottom: 3px solid #f093fb; animation-duration: 1s; }
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.loading-text {
-  font-size: 1.1rem;
-  color: var(--text-secondary);
-  margin: 1rem 0;
-}
-
-.ai-status {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.9rem;
-  color: #667eea;
-  opacity: 0.8;
-}
-
-.main-container {
-  position: relative;
-  z-index: 10;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 1rem;
-  min-height: 100vh;
-  opacity: 0;
-  transform: translateY(50px);
-  transition: var(--transition);
-}
-
-.main-container.loaded {
-  opacity: 1;
-  transform: translateY(0);
-}
-
 .header {
-  text-align: center;
-  padding: 3rem 0;
-  margin-bottom: 2rem;
+ text-align:center;margin-top:2.1rem;margin-bottom:1.5rem;position:relative;z-index:5;
 }
-
 .logo {
-  font-size: 3.5rem;
-  font-weight: 700;
-  background: var(--primary-gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: 1rem;
-  animation: glow 3s ease-in-out infinite;
+ font-size:3rem;font-weight:700;letter-spacing:.04em;
+ background:var(--primary-gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+ background-clip:text;color:transparent;animation:logoGlow 3s ease-in-out infinite;
+}
+@keyframes logoGlow {
+ 0%,100%{filter:brightness(1);}
+ 50%{filter:brightness(1.20) drop-shadow(0 2px 26px #637bff);}
+}
+.header .subtitle {
+ font-size:1.08rem;color:var(--secondary-txt);opacity:.89;margin:.42rem 0 1.07rem 0;
 }
 
-@keyframes glow {
-  0%, 100% { filter: brightness(1); transform: scale(1); }
-  50% { filter: brightness(1.2); transform: scale(1.05); }
+/* -- Panel -- */
+.main-glass {
+ width:98vw;max-width:520px;
+ margin:0 auto 2.2rem auto;background:var(--glass-bg);
+ border:2px solid var(--glass-border);border-radius:30px;
+ box-shadow:var(--shadow-glass);padding:2.3rem 2rem 2rem 2rem;
+ position:relative;z-index:2;backdrop-filter:blur(23px);transition:box-shadow 0.25s,background 0.25s;
+ min-width:260px;animation:fadeUp .7s;
 }
-
-.subtitle {
-  font-size: 1.1rem;
-  color: var(--text-secondary);
-  font-weight: 400;
-  margin-bottom: 2rem;
+@keyframes fadeUp {0%{opacity:0;transform:translateY(60px);}100%{opacity:1;transform:translateY(0);}}
+.main-glass .spot-bar {
+ width:100%;height:8px;background:
+ repeating-linear-gradient(135deg,#637bff 0 2px,#fff0 2px 16px,#41d2ff 16px 18px,#fff0 18px 32px);
+ border-radius:8px;opacity:.23;animation:movehue 6s linear infinite alternate;
+ margin-bottom:1.3rem;
 }
-
-.ai-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: var(--glass-bg);
-  backdrop-filter: blur(20px);
-  border: 1px solid var(--glass-border);
-  padding: 0.5rem 1rem;
-  border-radius: 50px;
-  font-size: 0.9rem;
-  color: var(--text-primary);
-  box-shadow: var(--shadow-glass);
+@keyframes movehue {0%{filter:hue-rotate(0deg);}100%{filter:hue-rotate(66deg);}}
+.terminal-label {
+ display:flex;align-items:center;gap:.45rem;
+ font-family:'JetBrains Mono',monospace;color:#67e6f8;opacity:.88;font-weight:600;
+ font-size:.92rem;margin-bottom:1.28rem;margin-top:-.4rem;position:relative;z-index:4;
 }
-
-.detector-panel {
-  background: var(--glass-bg);
-  backdrop-filter: blur(20px);
-  border: 1px solid var(--glass-border);
-  border-radius: 24px;
-  padding: 2rem;
-  margin-bottom: 2rem;
-  box-shadow: var(--shadow-glass);
-  position: relative;
-  overflow: hidden;
-}
-
-.detector-panel::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--primary-gradient);
-  opacity: 0.05;
-  border-radius: 24px;
-}
-
-.panel-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.panel-title {
-  font-size: 1.3rem;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.ai-status-indicator {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-}
-
-.status-dot {
-  width: 8px;
-  height: 8px;
-  background: #4facfe;
-  border-radius: 50%;
-  animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.7; transform: scale(1.2); }
-}
-
-.input-section {
-  margin-bottom: 2rem;
-}
-
+.terminal-label .blinker,.blink-2,.blink-3{margin-right:0.21em;}
 .input-label {
-  display: block;
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: var(--text-primary);
-  margin-bottom: 0.8rem;
+ font-weight:600;color:var(--primary-txt);margin-bottom:.67rem;
+ font-size:1.04rem;display:block;
 }
-
-.input-container {
-  position: relative;
-  margin-bottom: 1.5rem;
+.input-row {position:relative;display:flex;gap:.9rem;}
+.scam-message {
+ width:100%;min-height:98px;background:rgba(240,247,255,0.08);
+ border-radius:16px;border:1.4px solid #aeaffb22;
+ padding:1rem 1.2rem;font-size:1.08rem;color:var(--primary-txt);
+ font-family:'Inter',sans-serif;outline:none;resize:vertical;transition:var(--transition);
+ box-shadow: 0 2px 14px #0002;backdrop-filter:blur(1px);
 }
-
-.message-input {
-  width: 100%;
-  min-height: 120px;
-  padding: 1rem 1.2rem;
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  color: var(--text-primary);
-  font-family: 'Inter', sans-serif;
-  font-size: 0.95rem;
-  resize: vertical;
-  outline: none;
-  transition: var(--transition);
+.scam-message:focus, .scam-message:hover {
+ border-color:#637bff;box-shadow:0 0 0 4px #637bff40;background:#20204833;
 }
-
-.message-input:focus {
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-  background: rgba(255, 255, 255, 0.08);
+.btn-deck {
+ display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));
+ gap:.9rem;margin-bottom:.14rem;
 }
-
-.message-input::placeholder {
-  color: var(--text-secondary);
+.adv-btn {
+ border:none;border-radius:12px;font-size:1.04rem;font-weight:600;
+ background:var(--primary-gradient);color:#fff;cursor:pointer;
+ padding:.74rem 1.3rem;position:relative;overflow:hidden;transition:transform .19s,box-shadow .25s;
+ box-shadow:0 2px 16px #637bff1c;will-change:transform;
+ background-size:220% 220%;background-position:40% 50%;
 }
-
-.button-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
-
-.btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 12px;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: var(--transition);
-  position: relative;
-  overflow: hidden;
-}
-
-.btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: rgba(255, 255, 255, 0.1);
-  transition: left 0.5s ease;
-}
-
-.btn:hover::before {
-  left: 100%;
-}
-
-.btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-}
-
-.btn-primary {
-  background: var(--primary-gradient);
-  color: white;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-}
-
-.btn-secondary {
-  background: var(--glass-bg);
-  backdrop-filter: blur(20px);
-  border: 1px solid var(--glass-border);
-  color: var(--text-primary);
-}
-
-.result-section {
-  margin-bottom: 2rem;
-}
-
+.adv-btn:active {transform:scale(.98);}
+.adv-btn:hover {background:var(--secondary-gradient);box-shadow:0 8px 36px #fa709a35;}
+.adv-btn#speakBtn {background:linear-gradient(100deg,#43e97b 0,#38f9d7 100%);}
+.adv-btn#speakBtn:hover {background:linear-gradient(90deg,#7bffd3 0,#45aae9 100%);color:#203040;}
+.adv-btn#clearBtn {background:linear-gradient(110deg,#dfdae5 0,#2b3a6d 100%);color:#000;}
+.adv-btn#clearBtn:hover {color:#fff;background:linear-gradient(110deg,#392ae7 0,#fa709a 100%);}
+.result-block {margin-top:2.2rem;min-height:120px;position:relative;}
 .result-container {
-  background: var(--glass-bg);
-  backdrop-filter: blur(20px);
-  border: 1px solid var(--glass-border);
-  border-radius: 20px;
-  padding: 2rem;
-  box-shadow: var(--shadow-glass);
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-  transition: var(--transition);
+ border-radius:21px;background:rgba(255,255,255,0.09);border:2px solid #637bff44;
+ box-shadow:0 2px 22px #637bff1c;padding:1rem 1.4rem 1.2rem 1.4rem;
+ transition:box-shadow 0.4s,border-color 0.2s;min-height:110px;text-align:center;
+ display:flex;flex-direction:column;align-items:center;position:relative;
 }
-
-.result-icon {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-  animation: bounce 2s ease-in-out infinite;
-}
-
-@keyframes bounce {
-  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-  40% { transform: translateY(-10px); }
-  60% { transform: translateY(-5px); }
-}
-
+.result-container.safe {border-color:#41d2ff77;}
+.result-container.warning {border-color:#fa709a99;}
+.result-container.danger {border-color:#ff5361cc;}
+.result-icon {font-size:2.6rem;margin-bottom:.8rem;text-shadow:var(--icon-glow);}
+@keyframes iconBlink {0%,100%{opacity:1;}45%{opacity:.25;}50%{opacity:1;}}
+.result-icon.danger,.result-icon.warning {animation:iconBlink 1.7s infinite;}
 .result-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
+ font-size:1.23rem;font-weight:700;margin-bottom:.52rem;letter-spacing:.03em;
+ background:var(--primary-gradient);
+ -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+ background-clip:text;color:transparent;
 }
-
-.result-description {
-  font-size: 1rem;
-  color: var(--text-secondary);
-  line-height: 1.6;
-  margin-bottom: 1.5rem;
+.result-desc {
+ color:var(--secondary-txt);font-size:1.05rem;margin-bottom:1.05rem;line-height:1.55;min-height:38px;
 }
-
-.confidence-meter {
-  margin: 1.5rem 0;
+.conf-bar {height:7px;width:87%;margin:0 auto 1.05rem auto;background:linear-gradient(90deg,#dee6fb44,#3f95ffbb 75%);
+ border-radius:4px;overflow:hidden;box-shadow:0 2px 6px #637bff33;}
+.conf-fill {height:7px;width:0;background:var(--primary-gradient);border-radius:4px;transition:width 1.2s cubic-bezier(.71,0,.34,1);}
+.insights-glass {
+ background:rgba(255,255,255,.08);border-radius:13px;margin:1rem 0 0 0;
+ padding:1.03rem 1.2rem .81rem 1.17rem;box-shadow:0 2px 10px #637bff19;border-left:4px solid #637bffcc;
+ text-align:left;position:relative;
 }
-
-.confidence-label {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.5rem;
-  font-size: 0.9rem;
+.insights-title {font-size:.98rem;font-weight:700;color:#637abe;margin-bottom:.47rem;}
+.insights-list {list-style:none;margin:0;padding:0;}
+.insights-item {color:#a0aec0;font-size:1rem;margin-bottom:.37em;display:flex;align-items:flex-start;gap:.49em;}
+.insights-item span:first-child {color:#41d2ff;font-weight:900;font-size:1.03em;}
+#neuralViz {width:100%;height:72px;display:flex;align-items:center;justify-content:center;margin-top:1.2rem;}
+.nnodes {width:99%;height:68px;position:relative;}
+.nn {position:absolute;width:14px;height:14px;border-radius:50%;background:#637bff88;box-shadow:0 0 14px #637bff88;animation:nnPulse 1.3s infinite alternate;}
+@keyframes nnPulse {0%,100%{opacity:.64;transform:scale(1);}45%{opacity:1;transform:scale(1.41);}
 }
-
-.confidence-bar {
-  height: 6px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-.confidence-fill {
-  height: 100%;
-  background: var(--primary-gradient);
-  border-radius: 3px;
-  transition: width 1s ease;
-  width: 0%;
-}
-
-.result-safe { border-left: 4px solid #4facfe; }
-.result-warning { border-left: 4px solid #43e97b; }
-.result-danger { border-left: 4px solid #fa709a; }
-
-.ai-insights {
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 12px;
-  padding: 1.5rem;
-  margin-top: 1.5rem;
-  border-left: 3px solid #667eea;
-}
-
-.insights-title {
-  font-size: 1rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-  color: #667eea;
-}
-
-.insights-list {
-  list-style: none;
-}
-
-.insights-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0;
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-}
-
-.neural-viz {
-  position: relative;
-  height: 200px;
-  margin: 2rem 0;
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 16px;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.neural-network {
-  position: relative;
-  width: 100%;
-  height: 100%;
-}
-
-.neural-node {
-  position: absolute;
-  width: 12px;
-  height: 12px;
-  background: #667eea;
-  border-radius: 50%;
-  animation: neuralPulse 2s ease-in-out infinite;
-}
-
-@keyframes neuralPulse {
-  0%, 100% { opacity: 0.6; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.5); }
-}
-
-.footer {
-  text-align: center;
-  padding: 3rem 0;
-  background: var(--glass-bg);
-  backdrop-filter: blur(20px);
-  border: 1px solid var(--glass-border);
-  border-radius: 24px;
-  box-shadow: var(--shadow-glass);
-  margin-top: 2rem;
-}
-
-.developer-info {
-  margin-bottom: 2rem;
-}
-
-.developer-name {
-  font-size: 2rem;
-  font-weight: 700;
-  background: var(--secondary-gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: 0.5rem;
-}
-
-.contact-info {
-  margin-bottom: 2rem;
-}
-
-.contact-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: var(--glass-bg);
-  backdrop-filter: blur(20px);
-  border: 1px solid var(--glass-border);
-  padding: 0.75rem 1.5rem;
-  border-radius: 50px;
-  color: var(--text-primary);
-  text-decoration: none;
-  transition: var(--transition);
-}
-
-.contact-link:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.2);
-  background: rgba(102, 126, 234, 0.1);
-}
-
-.disclaimer {
-  padding: 1.5rem;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  line-height: 1.5;
-}
-
-.notification {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  background: var(--glass-bg);
-  backdrop-filter: blur(20px);
-  border: 1px solid var(--glass-border);
-  border-radius: 12px;
-  padding: 1rem 1.5rem;
-  color: var(--text-primary);
-  box-shadow: var(--shadow-glass);
-  transform: translateX(400px);
-  opacity: 0;
-  transition: var(--transition);
-  z-index: 1000;
-}
-
-.notification.show {
-  transform: translateX(0);
-  opacity: 1;
-}
-
-@media (max-width: 768px) {
-  .logo { font-size: 2.5rem; }
-  .detector-panel { padding: 1.5rem; }
-  .button-grid { grid-template-columns: 1fr; }
-  .panel-header { flex-direction: column; gap: 1rem; align-items: flex-start; }
-}
-
-@media (max-width: 480px) {
-  .main-container { padding: 0.5rem; }
-  .logo { font-size: 2rem; }
-  .detector-panel { padding: 1rem; }
-  .result-icon { font-size: 2rem; }
-  .result-title { font-size: 1.2rem; }
-}
+.footer-complex{text-align:center;padding:2.2rem 0 1.7rem 0;font-size:1.07rem;background:var(--glass-bg);border:1.5px solid var(--glass-border);
+border-radius:25px;margin:2.2rem auto 0 auto;box-shadow:0 2px 8px #637bff19;max-width:530px;color:#a0aec0;}
+.developer{font-size:1.22rem;font-weight:700;letter-spacing:.03em;background:linear-gradient(92deg,#7ed6fb,#f5f7fa 80%);
+background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;color:transparent;padding-bottom:.1em;margin-bottom:.21em;display:inline-block;}
+@media (max-width:800px){.main-glass{padding:1.3rem 4vw;}.footer-complex{max-width:98vw;}}
+@media (max-width:500px){.header {margin-top:.8rem;}
+.main-glass{padding:1.02rem 4vw;}.logo{font-size:1.6rem;}.footer-complex{font-size:.97rem;}}
 </style>
 </head>
 <body>
-
-<div class="particle-container" id="particleContainer"></div>
-
-<div class="loading-overlay" id="loadingOverlay">
-  <div class="loading-content">
-    <div class="loading-spinner">
-      <div class="spinner-ring ring-1"></div>
-      <div class="spinner-ring ring-2"></div>
-      <div class="spinner-ring ring-3"></div>
-    </div>
-    <div class="loading-text">Initializing AI Systems...</div>
-    <div class="ai-status" id="aiStatus">Loading neural networks...</div>
-  </div>
+<div class="bubbles-bg" id="bubblesBg"></div>
+<svg class="wave" viewBox="0 0 1440 260"><defs>
+<linearGradient id="w1" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#6fbffd" /><stop offset="100%" stop-color="#637bff00" /></linearGradient>
+</defs>
+<path d="M0,40 Q320,160 500,120 T1440,110 V260 H0Z" fill="url(#w1)" opacity=".24"/>
+<path d="M0,120 Q720,40 920,220 T1440,100 V260 H0Z" fill="url(#w1)" opacity=".17"/>
+<path d="M0,140 Q180,180 740,60 Q1260,180 1440,90 V260 H0Z" fill="url(#w1)" opacity=".28"/>
+</svg>
+<div class="header">
+ <div class="logo">🔒 AI Scam Detector</div>
+ <div class="subtitle">Advanced Neural Threat Pattern Sensing, Beautifully Delivered</div>
 </div>
-
-<div class="main-container" id="mainContainer">
-  <header class="header">
-    <h1 class="logo">🔮 AI Scam Detector</h1>
-    <p class="subtitle">Advanced neural network-powered threat detection system</p>
-    <div class="ai-badge">
-      <span>🤖</span>
-      <span>Powered by TensorFlow.js</span>
-    </div>
-  </header>
-
-  <div class="detector-panel">
-    <div class="panel-header">
-      <h2 class="panel-title">Threat Analysis Terminal</h2>
-      <div class="ai-status-indicator">
-        <div class="status-dot"></div>
-        <span>AI System Online</span>
-      </div>
-    </div>
-
-    <div class="input-section">
-      <label class="input-label">Message Analysis Input</label>
-      <div class="input-container">
-        <textarea 
-          id="messageInput" 
-          class="message-input" 
-          placeholder="Paste your message here for advanced AI-powered scam analysis..."
-        ></textarea>
-      </div>
-
-      <div class="button-grid">
-        <button id="analyzeBtn" class="btn btn-primary">
-          <span>🧠</span>
-          <span>AI Analysis</span>
-        </button>
-        <button id="pasteBtn" class="btn btn-secondary">
-          <span>📋</span>
-          <span>Paste</span>
-        </button>
-        <button id="speakBtn" class="btn btn-secondary">
-          <span>🔊</span>
-          <span>Read Result</span>
-        </button>
-        <button id="clearBtn" class="btn btn-secondary">
-          <span>🗑️</span>
-          <span>Clear</span>
-        </button>
-      </div>
-    </div>
-
-    <div class="result-section">
-      <div class="result-container" id="resultContainer">
-        <div class="result-icon" id="resultIcon">🛡️</div>
-        <h3 class="result-title" id="resultTitle">AI System Ready</h3>
-        <p class="result-description" id="resultDescription">
-          Advanced neural networks are standing by for message analysis
-        </p>
-        <div class="confidence-meter" id="confidenceMeter" style="display: none;">
-          <div class="confidence-label">
-            <span>Confidence Level</span>
-            <span id="confidenceValue">0%</span>
-          </div>
-          <div class="confidence-bar">
-            <div class="confidence-fill" id="confidenceFill"></div>
-          </div>
-        </div>
-        <div class="ai-insights" id="aiInsights" style="display: none;">
-          <div class="insights-title">🔍 AI Analysis Insights</div>
-          <ul class="insights-list" id="insightsList"></ul>
-        </div>
-      </div>
-    </div>
-
-    <div class="neural-viz" id="neuralViz" style="display: none;">
-      <div class="neural-network" id="neuralNetwork"></div>
-    </div>
+<section class="main-glass">
+ <div class="spot-bar"></div>
+ <div class="terminal-label">
+  <span class="blinker"></span>
+  <span>Threat Analysis Terminal</span>
+  <span class="blink-2"></span>
+  <span class="blink-3"></span>
+ </div>
+ <label class="input-label" for="scamText">Paste Suspicious Message</label>
+ <div class="input-row">
+  <textarea class="scam-message" id="scamText" placeholder="Paste message here for advanced scam analysis..."></textarea>
+ </div>
+ <div class="btn-deck">
+  <button class="adv-btn" id="aiAnalyzeBtn">AI Analysis</button>
+  <button class="adv-btn" id="speakBtn">🔊 Speak</button>
+  <button class="adv-btn" id="clearBtn">🗑️ Clear</button>
+ </div>
+ <div class="result-block">
+  <div class="result-container safe" id="resultContainer">
+   <div class="result-icon" id="resultIcon">🛡️</div>
+   <div class="result-title" id="resultTitle">AI Ready</div>
+   <div class="result-desc" id="resultDesc">Paste a suspicious message and click <b>AI Analysis</b> for a full scam risk assessment, confidence score, <span style="color:#fee140">and risk pattern breakdown.</span></div>
+   <div class="conf-bar"><div class="conf-fill" id="confFill" style="width:0;"></div></div>
+   <div class="insights-glass" id="aiInsights" style="display:none;">
+    <div class="insights-title">AI Insights</div>
+    <ul class="insights-list" id="insightsList"></ul>
+   </div>
   </div>
-
-  <footer class="footer">
-    <div class="developer-info">
-      <div class="developer-name">NIDHIN R</div>
-      <p style="color: var(--text-secondary); margin-bottom: 1rem;">AI Developer & Security Researcher</p>
-    </div>
-    <div class="contact-info">
-      <a href="mailto:r.nidhinofficial@gmail.com" class="contact-link">
-        <span>📧</span>
-        <span>r.nidhinofficial@gmail.com</span>
-      </a>
-    </div>
-    <div class="disclaimer">
-      <strong>⚠️ DISCLAIMER:</strong> Nidhin R will not be responsible for any errors, discrepancies, or inaccuracies in AI predictions. 
-      Always verify suspicious messages through official channels and exercise personal judgment.
-    </div>
-  </footer>
-</div>
-
+  <div id="neuralViz" style="display:none;">
+   <div class="nnodes" id="nnodes"></div>
+  </div>
+ </div>
+</section>
+<footer class="footer-complex">
+ <div class="developer">NIDHIN R</div>
+ <div style="margin:.5em 0 0.5em 0;">
+  <a style="color:#41d2ff;text-decoration:none;font-weight:600;" href="mailto:r.nidhinofficial@gmail.com">📧 r.nidhinofficial@gmail.com</a>
+ </div>
+ <div style="font-size:.97em;">
+  <b>⚠️ Disclaimer:</b> AI predictions are only support for your final decision. Always use personal judgment.
+ </div>
+</footer>
 <script>
-class AIScamDetector {
-  constructor() {
-    this.model = null;
-    this.vocabulary = new Map();
-    this.maxLength = 100;
-    this.isModelReady = false;
-    this.scamPatterns = [
-      /urgent.*action.*required/i,
-      /click.*here.*verify/i,
-      /congratulations.*won/i,
-      /claim.*prize.*now/i,
-      /suspended.*account/i,
-      /verify.*information/i,
-      /limited.*time.*offer/i,
-      /act.*now.*expire/i,
-      /free.*money/i,
-      /lottery.*winner/i,
-      /inheritance.*million/i,
-      /bitcoin.*investment/i,
-      /double.*your.*money/i,
-      /risk.*free.*profit/i,
-      /government.*grant/i,
-      /tax.*refund/i,
-      /social.*security/i,
-      /irs.*notice/i,
-      /legal.*action/i,
-      /arrest.*warrant/i
-    ];
-    
-    this.suspiciousKeywords = [
-      'urgent', 'immediate', 'expire', 'winner', 'congratulations', 'claim',
-      'verify', 'suspended', 'limited', 'offer', 'free', 'money', 'lottery',
-      'inheritance', 'bitcoin', 'investment', 'profit', 'government', 'grant',
-      'tax', 'refund', 'irs', 'legal', 'action', 'arrest', 'warrant', 'loan',
-      'credit', 'debt', 'virus', 'infected', 'security', 'breach', 'hacked'
-    ];
-    
-    this.init();
-  }
-
-  async init() {
-    try {
-      await this.loadModel();
-      this.initializeEventListeners();
-      this.createParticles();
-      this.simulateLoading();
-    } catch (error) {
-      console.error('AI initialization failed:', error);
-      this.fallbackToRuleBasedDetection();
-    }
-  }
-
-  async loadModel() {
-    try {
-      await tf.ready();
-      this.model = tf.sequential({
-        layers: [
-          tf.layers.embedding({ inputDim: 10000, outputDim: 128, inputLength: this.maxLength }),
-          tf.layers.lstm({ units: 64, dropout: 0.5, recurrentDropout: 0.5 }),
-          tf.layers.dense({ units: 32, activation: 'relu' }),
-          tf.layers.dropout({ rate: 0.5 }),
-          tf.layers.dense({ units: 1, activation: 'sigmoid' })
-        ]
-      });
-
-      this.model.compile({
-        optimizer: tf.train.adam(0.001),
-        loss: 'binaryCrossentropy',
-        metrics: ['accuracy']
-      });
-
-      this.isModelReady = true;
-      console.log('AI Model initialized successfully');
-    } catch (error) {
-      console.error('Model loading failed:', error);
-      this.isModelReady = false;
-    }
-  }
-
-  fallbackToRuleBasedDetection() {
-    this.isModelReady = true;
-    console.log('Using rule-based detection system');
-  }
-
-  simulateLoading() {
-    const statusElement = document.getElementById('aiStatus');
-    const loadingSteps = [
-      'Loading neural networks...',
-      'Initializing TensorFlow.js...',
-      'Configuring threat patterns...',
-      'Optimizing detection algorithms...',
-      'AI system ready!'
-    ];
-
-    let step = 0;
-    const interval = setInterval(() => {
-      if (step < loadingSteps.length) {
-        statusElement.textContent = loadingSteps[step];
-        step++;
-      } else {
-        clearInterval(interval);
-        setTimeout(() => {
-          document.getElementById('loadingOverlay').style.opacity = '0';
-          setTimeout(() => {
-            document.getElementById('loadingOverlay').style.display = 'none';
-            document.getElementById('mainContainer').classList.add('loaded');
-          }, 1000);
-        }, 500);
-      }
-    }, 800);
-  }
-
-  createParticles() {
-    const container = document.getElementById('particleContainer');
-    const particleCount = window.innerWidth < 768 ? 15 : 30;
-
-    for (let i = 0; i < particleCount; i++) {
-      const particle = document.createElement('div');
-      particle.className = 'particle';
-      particle.style.left = Math.random() * 100 + '%';
-      particle.style.top = Math.random() * 100 + '%';
-      particle.style.animationDelay = Math.random() * 6 + 's';
-      particle.style.width = particle.style.height = (Math.random() * 4 + 2) + 'px';
-      
-      const colors = ['rgba(102, 126, 234, 0.6)', 'rgba(118, 75, 162, 0.6)', 'rgba(240, 147, 251, 0.6)'];
-      particle.style.background = colors[Math.floor(Math.random() * colors.length)];
-      
-      container.appendChild(particle);
-    }
-  }
-
-  initializeEventListeners() {
-    document.getElementById('analyzeBtn').addEventListener('click', () => this.analyzeMessage());
-    document.getElementById('pasteBtn').addEventListener('click', () => this.pasteFromClipboard());
-    document.getElementById('speakBtn').addEventListener('click', () => this.speakResult());
-    document.getElementById('clearBtn').addEventListener('click', () => this.clearInput());
-  }
-
-  async analyzeMessage() {
-    const message = document.getElementById('messageInput').value.trim();
-    if (!message) {
-      this.showNotification('⚠️ Please enter a message to analyze');
-      return;
-    }
-
-    this.updateResult('analyzing', '🧠', 'AI Analysis in Progress', 'Advanced neural networks processing message patterns...');
-    this.showNeuralVisualization();
-
-    setTimeout(async () => {
-      try {
-        const analysis = await this.performAdvancedAnalysis(message);
-        this.displayResults(analysis);
-      } catch (error) {
-        console.error('Analysis failed:', error);
-        this.displayResults({
-          riskLevel: 'error',
-          confidence: 0,
-          title: 'Analysis Error',
-          description: 'Unable to complete analysis. Please try again.',
-          insights: []
-        });
-      }
-    }, 2500);
-  }
-
-  async performAdvancedAnalysis(message) {
-    const riskScore = this.calculateRiskScore(message);
-    const patternMatches = this.findPatternMatches(message);
-    const keywordAnalysis = this.analyzeKeywords(message);
-    const structuralAnalysis = this.analyzeStructure(message);
-
-    const totalRisk = Math.min(100, riskScore + patternMatches.score + keywordAnalysis.score + structuralAnalysis.score);
-    const confidence = Math.min(95, Math.max(60, totalRisk + Math.random() * 10));
-
-    let riskLevel, title, description;
-    if (totalRisk >= 75) {
-      riskLevel = 'danger';
-      title = 'High Risk Scam Detected';
-      description = 'This message contains multiple indicators of fraudulent content. Exercise extreme caution.';
-    } else if (totalRisk >= 45) {
-      riskLevel = 'warning';
-      title = 'Suspicious Content Warning';
-      description = 'This message shows several concerning patterns. Verify authenticity before taking action.';
-    } else if (totalRisk >= 20) {
-      riskLevel = 'caution';
-      title = 'Potential Risk Detected';
-      description = 'Some suspicious elements detected. Proceed with caution and verify sender.';
-    } else {
-      riskLevel = 'safe';
-      title = 'Message Appears Safe';
-      description = 'No significant threat indicators detected. Message appears legitimate.';
-    }
-
-    const insights = [
-      ...patternMatches.insights,
-      ...keywordAnalysis.insights,
-      ...structuralAnalysis.insights
-    ].slice(0, 5);
-
-    return {
-      riskLevel,
-      confidence: Math.round(confidence),
-      title,
-      description,
-      insights,
-      totalRisk
-    };
-  }
-
-  calculateRiskScore(message) {
-    const lowerMessage = message.toLowerCase();
-    let score = 0;
-
-    if (message.match(/$[d,]+/)) score += 15;
-    if (message.match(/https?://[^s]+/gi)) score += 20;
-    if (message.match(/+?d{10,}/)) score += 10;
-    if ((message.match(/[A-Z]/g) || []).length / message.length > 0.3) score += 10;
-    if ((message.match(/!/g) || []).length > 3) score += 5;
-    if (message.length < 50 && lowerMessage.includes('urgent')) score += 15;
-
-    return score;
-  }
-
-  findPatternMatches(message) {
-    const matches = [];
-    let score = 0;
-
-    this.scamPatterns.forEach((pattern, index) => {
-      if (pattern.test(message)) {
-        matches.push(`Scam pattern detected: ${pattern.source.slice(0, 30)}...`);
-        score += 25;
-      }
-    });
-
-    return {
-      score: Math.min(score, 75),
-      insights: matches.slice(0, 3)
-    };
-  }
-
-  analyzeKeywords(message) {
-    const lowerMessage = message.toLowerCase();
-    const foundKeywords = [];
-    let score = 0;
-
-    this.suspiciousKeywords.forEach(keyword => {
-      if (lowerMessage.includes(keyword)) {
-        foundKeywords.push(keyword);
-        score += 5;
-      }
-    });
-
-    return {
-      score: Math.min(score, 50),
-      insights: foundKeywords.length > 0 ? [`Suspicious keywords found: ${foundKeywords.slice(0, 5).join(', ')}`] : []
-    };
-  }
-
-  analyzeStructure(message) {
-    const insights = [];
-    let score = 0;
-
-    if (message.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+.[a-zA-Z]{2,}/g)) {
-      insights.push('Email address detected in message');
-      score += 10;
-    }
-
-    if (message.split(' ').length < 10) {
-      insights.push('Unusually short message');
-      score += 5;
-    }
-
-    if (message.includes('whatsapp') || message.includes('telegram')) {
-      insights.push('Alternative communication platform mentioned');
-      score += 15;
-    }
-
-    return { score, insights };
-  }
-
-  displayResults(analysis) {
-    const { riskLevel, confidence, title, description, insights } = analysis;
-
-    this.updateResult(riskLevel, this.getIconForRiskLevel(riskLevel), title, description);
-    this.showConfidenceMeter(confidence);
-    this.showInsights(insights);
-    this.hideNeuralVisualization();
-    
-    this.showNotification(`Analysis complete: ${title}`);
-  }
-
-  getIconForRiskLevel(level) {
-    const icons = {
-      safe: '✅',
-      caution: '⚠️',
-      warning: '🚨',
-      danger: '🚫',
-      analyzing: '🧠',
-      error: '❌'
-    };
-    return icons[level] || '🔍';
-  }
-
-  updateResult(level, icon, title, description) {
-    const container = document.getElementById('resultContainer');
-    const iconEl = document.getElementById('resultIcon');
-    const titleEl = document.getElementById('resultTitle');
-    const descEl = document.getElementById('resultDescription');
-
-    container.className = `result-container result-${level}`;
-    iconEl.textContent = icon;
-    titleEl.textContent = title;
-    descEl.textContent = description;
-  }
-
-  showConfidenceMeter(confidence) {
-    const meter = document.getElementById('confidenceMeter');
-    const value = document.getElementById('confidenceValue');
-    const fill = document.getElementById('confidenceFill');
-
-    meter.style.display = 'block';
-    value.textContent = `${confidence}%`;
-    
-    setTimeout(() => {
-      fill.style.width = `${confidence}%`;
-    }, 300);
-  }
-
-  showInsights(insights) {
-    const container = document.getElementById('aiInsights');
-    const list = document.getElementById('insightsList');
-
-    if (insights.length === 0) {
-      container.style.display = 'none';
-      return;
-    }
-
-    list.innerHTML = '';
-    insights.forEach(insight => {
-      const li = document.createElement('li');
-      li.className = 'insights-item';
-      li.innerHTML = `<span>•</span><span>${insight}</span>`;
-      list.appendChild(li);
-    });
-
-    container.style.display = 'block';
-  }
-
-  showNeuralVisualization() {
-    const viz = document.getElementById('neuralViz');
-    const network = document.getElementById('neuralNetwork');
-    
-    viz.style.display = 'flex';
-    network.innerHTML = '';
-
-    for (let i = 0; i < 20; i++) {
-      const node = document.createElement('div');
-      node.className = 'neural-node';
-      node.style.left = Math.random() * 90 + '%';
-      node.style.top = Math.random() * 90 + '%';
-      node.style.animationDelay = Math.random() * 2 + 's';
-      network.appendChild(node);
-    }
-  }
-
-  hideNeuralVisualization() {
-    setTimeout(() => {
-      document.getElementById('neuralViz').style.display = 'none';
-    }, 1000);
-  }
-
-  async pasteFromClipboard() {
-    try {
-      const text = await navigator.clipboard.readText();
-      document.getElementById('messageInput').value = text;
-      this.showNotification('📋 Text pasted successfully');
-    } catch (error) {
-      this.showNotification('❌ Unable to access clipboard. Use Ctrl+V to paste.');
-    }
-  }
-
-  speakResult() {
-    const title = document.getElementById('resultTitle').textContent;
-    const description = document.getElementById('resultDescription').textContent;
-    const text = `${title}. ${description}`;
-
-    if ('speechSynthesis' in window) {
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'en-US';
-      utterance.rate = 0.8;
-      speechSynthesis.speak(utterance);
-      this.showNotification('🔊 Reading analysis results');
-    } else {
-      this.showNotification('❌ Speech synthesis not supported');
-    }
-  }
-
-  clearInput() {
-    document.getElementById('messageInput').value = '';
-    this.updateResult('safe', '🛡️', 'AI System Ready', 'Advanced neural networks are standing by for message analysis');
-    document.getElementById('confidenceMeter').style.display = 'none';
-    document.getElementById('aiInsights').style.display = 'none';
-    this.hideNeuralVisualization();
-    this.showNotification('🗑️ Input cleared');
-  }
-
-  showNotification(message) {
-    const notification = document.createElement('div');
-    notification.className = 'notification';
-    notification.textContent = message;
-    document.body.appendChild(notification);
-
-    setTimeout(() => notification.classList.add('show'), 100);
-    setTimeout(() => {
-      notification.classList.remove('show');
-      setTimeout(() => document.body.removeChild(notification), 300);
-    }, 3000);
-  }
+function createBubbles(){
+ const bg=document.getElementById('bubblesBg');bg.innerHTML='';
+ let w=window.innerWidth,h=window.innerHeight,n=w<500?14:32;
+ for(let i=0;i<n;i++){
+  let b=document.createElement('div');b.className='bubble';
+  let size=36+Math.random()*70;
+  b.style.width=b.style.height=size+'px';
+  b.style.left=Math.random()*w+'px';
+  b.style.top=(h*0.7+Math.random()*h*0.35)+'px';
+  b.style.opacity=0.20+Math.random()*0.41;
+  b.style.animationDuration=(11+Math.random()*7)+'s';
+  bg.appendChild(b);
+ }
 }
+createBubbles();
+window.addEventListener('resize',createBubbles);
 
-document.addEventListener('DOMContentLoaded', () => {
-  new AIScamDetector();
-});
-
-window.addEventListener('resize', () => {
-  const container = document.getElementById('particleContainer');
-  if (container.children.length !== (window.innerWidth < 768 ? 15 : 30)) {
-    container.innerHTML = '';
-    setTimeout(() => new AIScamDetector().createParticles(), 100);
+function showNotification(msg){
+ const n=document.createElement('div');n.className='notification';n.innerText=msg;document.body.appendChild(n);
+ setTimeout(()=>n.remove(),3100);
+}
+function neuralVizOn(){
+ const v=document.getElementById('neuralViz'),nodes=document.getElementById('nnodes');
+ v.style.display='flex';nodes.innerHTML='';
+ let n=14,i=0;while(i<n){
+  const d=document.createElement('div');d.className='nn';
+  d.style.left=Math.random()*94+'%';d.style.top=Math.random()*59+'%';
+  d.style.animationDelay=(Math.random()*2.2)+'s';nodes.appendChild(d);i++;
+ }
+}
+function neuralVizOff(){
+ setTimeout(()=>{document.getElementById('neuralViz').style.display='none';},1200);
+}
+async function analyzeWithAI(msg){
+ neuralVizOn();
+ const sysPrompt='You are a Scam Detector AI. Analyze the input and provide: 1. Risk Level (Safe, Caution, Warning, Danger), 2. Confidence (0-100), 3. Short reason, 4. Top 3 risk patterns or safe features. Respond in JSON: {"level":"","confidence":0,"reason":"","insights":[]}.';
+ let completion = await puter.ai.chat.completions.create({
+  model: "mixtral-8x7b",
+  messages: [
+   {role:"system",content:sysPrompt},
+   {role:"user",content:"Analyze this message for scam/fraud risk:
+"+msg}
+  ],
+  stream:false,
+  max_tokens:230,
+  temperature:0.35
+ });
+ let reply=completion.choices?.[0]?.message?.content;
+ try{
+  let js=JSON.parse(reply);
+  return js;
+ }catch{
+  return {level:"caution",confidence:60,reason:"AI could not parse output.",insights:["Malformed response."]};
+ }
+}
+function displayResult(res){
+ const c=document.getElementById('resultContainer');
+ let ic='🛡️',cls='safe';
+ if(res.level=="danger"){ic='🚫';cls='danger';showNotification("⚡ High Risk Detected!");}
+ else if(res.level=="warning"){ic='🚨';cls='warning';showNotification("⚠️ Suspicious Pattern!");}
+ else if(res.level=="caution"){ic='⚠️';cls='warning';}
+ else{ic='✅';cls='safe';if(res.confidence>70)showNotification("✅ Likely Safe");}
+ c.className='result-container '+cls;
+ document.getElementById('resultIcon').innerText=ic;
+ document.getElementById('resultIcon').className='result-icon '+cls;
+ document.getElementById('resultTitle').innerText=
+  res.level&&(res.level!=="safe"?res.level.charAt(0).toUpperCase()+res.level.slice(1):"Message is Safe");
+ document.getElementById('resultDesc').innerText=res.reason||'-';
+ document.getElementById('confFill').style.width=res.confidence+'%';
+ let infoc=document.getElementById('aiInsights');
+ let l=document.getElementById('insightsList');l.innerHTML='';
+ if(Array.isArray(res.insights)&&res.insights.length){
+  infoc.style.display='block';
+  for(const i of res.insights){
+   let li=document.createElement('li');
+   li.className='insights-item';
+   li.innerHTML=`<span>•</span><span>${i}</span>`;
+   l.appendChild(li);
   }
-});
+ }else infoc.style.display='none';
+ neuralVizOff();
+}
+document.getElementById('aiAnalyzeBtn').onclick=async()=>{
+ let val=document.getElementById('scamText').value.trim();
+ if(!val){showNotification("Please paste a message.");return;}
+ document.getElementById('resultContainer').className="result-container";
+ document.getElementById('resultIcon').innerText='🧠';
+ document.getElementById('resultIcon').className='result-icon';
+ document.getElementById('resultTitle').innerText="AI Analysis in Progress...";
+ document.getElementById('resultDesc').innerText="Neural pattern sensors are analyzing...";
+ document.getElementById('confFill').style.width='0%';
+ document.getElementById('aiInsights').style.display='none';
+ neuralVizOn();
+ try{
+  let result=await analyzeWithAI(val);
+  displayResult(result);
+ }catch{
+  neuralVizOff();
+  showNotification("AI Error. Please try again.");
+ }
+};
+document.getElementById('clearBtn').onclick=()=>{
+ document.getElementById('scamText').value='';
+ document.getElementById('resultContainer').className='result-container safe';
+ document.getElementById('resultIcon').innerText='🛡️';
+ document.getElementById('resultIcon').className='result-icon safe';
+ document.getElementById('resultTitle').innerText='AI Ready';
+ document.getElementById('resultDesc').innerHTML='Paste a suspicious message and click <b>AI Analysis</b> for a full scam risk assessment, confidence score, <span style="color:#fee140">and risk pattern breakdown.</span>';
+ document.getElementById('confFill').style.width='0%';
+ document.getElementById('aiInsights').style.display='none';
+ neuralVizOff();
+ showNotification("Cleared!");
+};
+document.getElementById('speakBtn').onclick=()=>{
+ let txt=document.getElementById('resultTitle').innerText+'. '+document.getElementById('resultDesc').innerText;
+ if('speechSynthesis'in window){
+  window.speechSynthesis.cancel();
+  let u=new SpeechSynthesisUtterance(txt);
+  u.lang='en-US';u.rate=0.88;
+  window.speechSynthesis.speak(u);
+  showNotification("Speaking result...");
+ }else showNotification("Speech not supported");
+};
 </script>
-
 </body>
 </html>
